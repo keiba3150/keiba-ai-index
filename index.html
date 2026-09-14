@@ -1,0 +1,392 @@
+<title>総合指数ボード</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;800&family=Noto+Sans+JP:wght@400;500;600;700&display=swap');
+
+  :root{
+    --paper:#F5F1E6;
+    --surface:#FFFFFF;
+    --surface-2:#FBF8EF;
+    --ink:#1C2420;
+    --ink-muted:#63695D;
+    --ink-faint:#8B8F80;
+    --turf:#2E6B4C;
+    --turf-deep:#1E4A34;
+    --turf-tint:rgba(46,107,76,.10);
+    --gold:#B3812E;
+    --gold-tint:rgba(179,129,46,.14);
+    --silver:#7A7F72;
+    --bronze:#9C6B3E;
+    --line:#DED5BD;
+    --line-soft:#E9E2CE;
+    --positive:#2E7D4F;
+    --positive-bg:rgba(46,125,79,.12);
+    --negative:#B0453C;
+    --negative-bg:rgba(176,69,60,.12);
+    --shadow: 0 1px 2px rgba(28,36,32,.05), 0 8px 24px -12px rgba(28,36,32,.18);
+    --radius-lg: 18px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#12160F;
+      --surface:#1A1F16;
+      --surface-2:#1F251A;
+      --ink:#ECE7D6;
+      --ink-muted:#A3A594;
+      --ink-faint:#767A6A;
+      --turf:#6FBF92;
+      --turf-deep:#4E9A72;
+      --turf-tint:rgba(111,191,146,.12);
+      --gold:#E0B15C;
+      --gold-tint:rgba(224,177,92,.14);
+      --silver:#9A9D8E;
+      --bronze:#C08A56;
+      --line:#2B3025;
+      --line-soft:#232820;
+      --positive:#6FBF92;
+      --positive-bg:rgba(111,191,146,.14);
+      --negative:#E28B80;
+      --negative-bg:rgba(226,139,128,.14);
+      --shadow: 0 1px 2px rgba(0,0,0,.25), 0 12px 28px -14px rgba(0,0,0,.55);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12160F;
+    --surface:#1A1F16;
+    --surface-2:#1F251A;
+    --ink:#ECE7D6;
+    --ink-muted:#A3A594;
+    --ink-faint:#767A6A;
+    --turf:#6FBF92;
+    --turf-deep:#4E9A72;
+    --turf-tint:rgba(111,191,146,.12);
+    --gold:#E0B15C;
+    --gold-tint:rgba(224,177,92,.14);
+    --silver:#9A9D8E;
+    --bronze:#C08A56;
+    --line:#2B3025;
+    --line-soft:#232820;
+    --positive:#6FBF92;
+    --positive-bg:rgba(111,191,146,.14);
+    --negative:#E28B80;
+    --negative-bg:rgba(226,139,128,.14);
+    --shadow: 0 1px 2px rgba(0,0,0,.25), 0 12px 28px -14px rgba(0,0,0,.55);
+  }
+
+  *{box-sizing:border-box;}
+  html{color-scheme:light dark;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Noto Sans JP',"Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif;
+    padding-inline:20px;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{margin:0; text-wrap:balance;}
+  .serif{font-family:'Shippori Mincho', serif;}
+  .tnum{font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1;}
+  a{color:inherit;}
+
+  /* ---- top bar ---- */
+  .topbar{
+    position:sticky; top:0; z-index:30;
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    padding-block:16px;
+    background:color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+    margin-inline:-20px; padding-inline:20px;
+  }
+  .brand{display:flex; align-items:baseline; gap:10px; margin-right:auto;}
+  .brand .mark{
+    width:30px; height:30px; border-radius:50%;
+    background:conic-gradient(from -40deg, var(--turf), var(--turf-deep) 55%, var(--turf) 100%);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--surface); font-size:13px; font-weight:800; flex:none;
+  }
+  .brand h1{font-size:19px; font-weight:700; letter-spacing:.02em;}
+  .brand .updated{font-size:11.5px; color:var(--ink-faint);}
+  .tabs{display:flex; gap:6px; background:var(--surface-2); padding:4px; border-radius:999px; border:1px solid var(--line-soft);}
+  .tab{
+    appearance:none; border:none; background:transparent; cursor:pointer;
+    padding:7px 15px; border-radius:999px; font-size:13.5px; font-weight:600;
+    color:var(--ink-muted); font-family:inherit;
+  }
+  .tab[aria-pressed="true"]{background:var(--turf); color:#fff;}
+  .tab:not([aria-pressed="true"]):hover{color:var(--ink);}
+
+  /* ---- intro ---- */
+  .intro{
+    max-width:760px; margin:22px 0 8px; padding:16px 18px;
+    background:var(--surface); border:1px solid var(--line-soft); border-radius:var(--radius-md);
+    font-size:13.5px; line-height:1.75; color:var(--ink-muted);
+  }
+  .intro b{color:var(--ink); font-weight:600;}
+  .intro .term{color:var(--turf-deep); font-weight:600;}
+  :root[data-theme="dark"] .intro .term, @media (prefers-color-scheme:dark){.intro .term{color:var(--turf);}}
+
+  /* ---- pickup strip ---- */
+  .section-label{
+    font-size:12px; font-weight:700; letter-spacing:.12em; color:var(--ink-faint);
+    text-transform:uppercase; margin:30px 0 10px;
+  }
+  .pickup-row{
+    display:flex; gap:10px; overflow-x:auto; padding-bottom:6px; scroll-snap-type:x proximity;
+  }
+  .pickup-card{
+    scroll-snap-align:start; flex:none; width:168px;
+    background:var(--surface); border:1px solid var(--line-soft); border-radius:var(--radius-md);
+    padding:12px 13px; box-shadow:var(--shadow); text-decoration:none; color:inherit;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .pickup-card:hover{border-color:var(--turf);}
+  .pickup-meta{font-size:11px; color:var(--ink-faint); display:flex; justify-content:space-between;}
+  .pickup-horse{font-size:14.5px; font-weight:700; line-height:1.3;}
+  .pickup-score{display:flex; align-items:baseline; gap:4px;}
+  .pickup-score .v{font-size:20px; font-weight:800; color:var(--turf-deep);}
+  :root[data-theme="dark"] .pickup-score .v{color:var(--turf);}
+  @media (prefers-color-scheme:dark){.pickup-score .v{color:var(--turf);}}
+  .pickup-score .u{font-size:10.5px; color:var(--ink-faint);}
+
+  /* ---- track group ---- */
+  .track-heading{
+    display:flex; align-items:center; gap:10px; margin:34px 0 14px;
+  }
+  .track-heading h2{font-size:22px; font-weight:600;}
+  .track-heading .count{font-size:12px; color:var(--ink-faint); background:var(--surface-2); border:1px solid var(--line-soft); padding:3px 10px; border-radius:999px;}
+  .track-heading .rule{flex:1; height:1px; background:var(--line);}
+
+  .race-grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(380px,1fr)); gap:16px;
+    margin-bottom:8px;
+  }
+
+  .race-card{
+    background:var(--surface); border:1px solid var(--line-soft); border-radius:var(--radius-lg);
+    box-shadow:var(--shadow); overflow:hidden; scroll-margin-top:90px;
+  }
+  .race-card-head{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:13px 16px; border-bottom:1px solid var(--line-soft); background:var(--surface-2);
+  }
+  .race-card-head .no{font-size:16.5px; font-weight:700;}
+  .race-card-head .cnt{font-size:11.5px; color:var(--ink-faint);}
+
+  .race-table-wrap{overflow-x:auto;}
+  table.horses{border-collapse:collapse; width:100%; min-width:560px; font-size:12.5px;}
+  table.horses th{
+    text-align:left; font-weight:600; color:var(--ink-faint); font-size:10.5px;
+    letter-spacing:.05em; padding:8px 9px; border-bottom:1px solid var(--line-soft);
+    white-space:nowrap; position:sticky; top:0; background:var(--surface);
+  }
+  table.horses td{padding:8px 9px; border-bottom:1px solid var(--line-soft); vertical-align:middle; white-space:nowrap;}
+  table.horses tbody tr:last-child td{border-bottom:none;}
+  table.horses tbody tr:hover{background:var(--turf-tint);}
+
+  .rank-badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:22px; height:22px; border-radius:50%; font-size:11px; font-weight:800;
+    background:var(--surface-2); color:var(--ink-muted); border:1px solid var(--line-soft);
+  }
+  .rank-badge.r1{background:var(--gold-tint); color:var(--gold); border-color:transparent;}
+  .rank-badge.r2{background:var(--line-soft); color:var(--silver); border-color:transparent;}
+  .rank-badge.r3{background:var(--gold-tint); color:var(--bronze); border-color:transparent; opacity:.85;}
+
+  .horse-num{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:20px; height:20px; padding-inline:3px; border-radius:5px;
+    background:var(--surface-2); border:1px solid var(--line-soft); font-size:11px; font-weight:700;
+  }
+  .horse-name{font-weight:600;}
+  .score-cell{display:flex; align-items:center; gap:7px; min-width:110px;}
+  .score-num{font-weight:800; font-size:13px; width:34px; text-align:right;}
+  .score-bar{flex:1; height:6px; border-radius:3px; background:var(--line-soft); min-width:48px; overflow:hidden;}
+  .score-bar i{display:block; height:100%; border-radius:3px; background:linear-gradient(90deg, var(--turf-deep), var(--turf));}
+
+  .prob{color:var(--ink-muted);}
+  .ev{
+    display:inline-flex; align-items:center; gap:2px; font-weight:700; font-size:11.5px;
+    padding:2px 7px; border-radius:6px;
+  }
+  .ev.pos{color:var(--positive); background:var(--positive-bg);}
+  .ev.neg{color:var(--negative); background:var(--negative-bg);}
+  .odds{color:var(--ink-faint); font-size:11.5px;}
+
+  .col-group-label{font-size:9.5px; font-weight:700; letter-spacing:.06em; color:var(--ink-faint);}
+
+  footer{
+    margin:50px -20px 0; padding:22px 20px 34px; border-top:1px solid var(--line);
+    font-size:11.5px; color:var(--ink-faint); text-align:center;
+  }
+
+  @media (max-width:480px){
+    .brand h1{font-size:16.5px;}
+    .race-grid{grid-template-columns:1fr;}
+    .pickup-card{width:148px;}
+  }
+</style>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="mark serif">指</span>
+    <div>
+      <h1 class="serif">総合指数ボード</h1>
+      <div class="updated tnum" id="updatedLabel"></div>
+    </div>
+  </div>
+  <div class="tabs" id="trackTabs" role="tablist" aria-label="競馬場で絞り込み"></div>
+</div>
+
+<p class="intro">
+  <b>keiba-ai</b> が算出した <span class="term">総合指数</span>(勝率・複勝率・期待値を統合したランキング指数)を、レースごとに指数順で掲載しています。各馬の行には単勝・複勝それぞれの予測確率、オッズ、期待値(EV)を並べ、EVがプラスの馬は緑、マイナスは赤のバッジで示しています。
+</p>
+
+<div class="section-label">本命ピックアップ(指数1位)</div>
+<div class="pickup-row" id="pickupRow"></div>
+
+<div id="trackGroups"></div>
+
+<footer>keiba-ai outputs / race_ranking.csv — <span id="footDate"></span> 時点のデータ</footer>
+
+<script id="race-data" type="application/json">[{"raceId":"20260913_06_01","date":"20260913","trackCode":"06","track":"中山","raceNo":1,"horses":[{"rank":1,"score":62.2,"winRank":1,"num":4,"name":"モナコブル","winProb":0.2459,"winOdds":5.3,"evWin":0.3034,"placeProb":0.4125,"placeOdds":1.7,"evPlace":-0.2987},{"rank":2,"score":56.8,"winRank":8,"num":3,"name":"スノーリン","winProb":0.0322,"winOdds":36.0,"evWin":0.1577,"placeProb":0.207,"placeOdds":7.0,"evPlace":0.4488},{"rank":3,"score":54.0,"winRank":2,"num":10,"name":"ゴールデンルーキー","winProb":0.2298,"winOdds":2.7,"evWin":-0.3796,"placeProb":0.5268,"placeOdds":1.3,"evPlace":-0.3152},{"rank":4,"score":53.2,"winRank":3,"num":8,"name":"サラフィエル","winProb":0.1316,"winOdds":6.0,"evWin":-0.2106,"placeProb":0.3411,"placeOdds":1.9,"evPlace":-0.3518},{"rank":5,"score":52.6,"winRank":5,"num":5,"name":"セイウンビッグバン","winProb":0.0695,"winOdds":11.2,"evWin":-0.2216,"placeProb":0.2469,"placeOdds":2.7,"evPlace":-0.3334},{"rank":6,"score":52.5,"winRank":7,"num":7,"name":"グロリアラウス","winProb":0.0539,"winOdds":16.0,"evWin":-0.1371,"placeProb":0.2252,"placeOdds":3.5,"evPlace":-0.2119},{"rank":7,"score":45.6,"winRank":4,"num":2,"name":"シークレットキー","winProb":0.1266,"winOdds":4.3,"evWin":-0.4556,"placeProb":0.3987,"placeOdds":1.6,"evPlace":-0.3622},{"rank":8,"score":42.1,"winRank":10,"num":9,"name":"ストラクチャー","winProb":0.0206,"winOdds":18.7,"evWin":-0.6151,"placeProb":0.2234,"placeOdds":4.0,"evPlace":-0.1065},{"rank":9,"score":41.2,"winRank":9,"num":1,"name":"ヴィーデ","winProb":0.0223,"winOdds":22.3,"evWin":-0.5018,"placeProb":0.1625,"placeOdds":4.6,"evPlace":-0.2524},{"rank":10,"score":39.9,"winRank":6,"num":6,"name":"プレミアブルー","winProb":0.0676,"winOdds":7.8,"evWin":-0.4727,"placeProb":0.256,"placeOdds":2.2,"evPlace":-0.4369}]},{"raceId":"20260913_06_02","date":"20260913","trackCode":"06","track":"中山","raceNo":2,"horses":[{"rank":1,"score":60.1,"winRank":5,"num":9,"name":"マイネルウルカヌス","winProb":0.08,"winOdds":22.4,"evWin":0.7913,"placeProb":0.1834,"placeOdds":4.2,"evPlace":-0.2299},{"rank":2,"score":58.3,"winRank":1,"num":7,"name":"ウィナーズチェック","winProb":0.2317,"winOdds":3.3,"evWin":-0.2353,"placeProb":0.5478,"placeOdds":1.3,"evPlace":-0.2879},{"rank":3,"score":57.8,"winRank":4,"num":2,"name":"マイネルリシャール","winProb":0.1427,"winOdds":7.2,"evWin":0.0278,"placeProb":0.3885,"placeOdds":2.0,"evPlace":-0.2231},{"rank":4,"score":51.6,"winRank":7,"num":6,"name":"ギガントシュラーク","winProb":0.0359,"winOdds":27.5,"evWin":-0.0125,"placeProb":0.1177,"placeOdds":5.0,"evPlace":-0.4116},{"rank":5,"score":50.7,"winRank":2,"num":8,"name":"シュートザワークス","winProb":0.219,"winOdds":2.6,"evWin":-0.4307,"placeProb":0.6268,"placeOdds":1.2,"evPlace":-0.2478},{"rank":6,"score":50.4,"winRank":3,"num":3,"name":"テキサス","winProb":0.1584,"winOdds":4.2,"evWin":-0.3349,"placeProb":0.4914,"placeOdds":1.4,"evPlace":-0.3121},{"rank":7,"score":47.4,"winRank":8,"num":5,"name":"サーギュスターヴ","winProb":0.0323,"winOdds":26.7,"evWin":-0.1372,"placeProb":0.1177,"placeOdds":4.9,"evPlace":-0.4234},{"rank":8,"score":45.5,"winRank":9,"num":1,"name":"ライヴテキーラ","winProb":0.0269,"winOdds":29.4,"evWin":-0.2095,"placeProb":0.1198,"placeOdds":5.3,"evPlace":-0.3651},{"rank":9,"score":39.9,"winRank":6,"num":4,"name":"サンタンヌ","winProb":0.0581,"winOdds":8.1,"evWin":-0.5292,"placeProb":0.2729,"placeOdds":2.1,"evPlace":-0.427},{"rank":10,"score":38.5,"winRank":10,"num":10,"name":"アルバスタキヤ","winProb":0.015,"winOdds":30.6,"evWin":-0.5406,"placeProb":0.1342,"placeOdds":5.5,"evPlace":-0.2617}]},{"raceId":"20260913_06_03","date":"20260913","trackCode":"06","track":"中山","raceNo":3,"horses":[{"rank":1,"score":61.0,"winRank":4,"num":3,"name":"コスモベスケーデン","winProb":0.0833,"winOdds":16.1,"evWin":0.341,"placeProb":0.2234,"placeOdds":3.4,"evPlace":-0.2405},{"rank":2,"score":58.9,"winRank":1,"num":6,"name":"ラフエルガ","winProb":0.2847,"winOdds":2.6,"evWin":-0.2599,"placeProb":0.5133,"placeOdds":1.3,"evPlace":-0.3327},{"rank":3,"score":57.6,"winRank":5,"num":5,"name":"ソラティオ","winProb":0.066,"winOdds":20.8,"evWin":0.3726,"placeProb":0.1428,"placeOdds":4.2,"evPlace":-0.4002},{"rank":4,"score":57.5,"winRank":13,"num":14,"name":"ヴァンデエス","winProb":0.0238,"winOdds":85.6,"evWin":1.0355,"placeProb":0.0549,"placeOdds":14.6,"evPlace":-0.199},{"rank":5,"score":57.4,"winRank":2,"num":12,"name":"キセキノユニコーン","winProb":0.1298,"winOdds":7.4,"evWin":-0.0393,"placeProb":0.2837,"placeOdds":2.1,"evPlace":-0.4043},{"rank":6,"score":55.1,"winRank":6,"num":4,"name":"アルニタク","winProb":0.0573,"winOdds":16.3,"evWin":-0.0662,"placeProb":0.2134,"placeOdds":3.4,"evPlace":-0.2746},{"rank":7,"score":51.9,"winRank":12,"num":13,"name":"シュネルアステリア","winProb":0.0263,"winOdds":44.3,"evWin":0.1644,"placeProb":0.0864,"placeOdds":8.1,"evPlace":-0.3002},{"rank":8,"score":50.3,"winRank":7,"num":9,"name":"アドバンスアゲイン","winProb":0.0462,"winOdds":17.7,"evWin":-0.1818,"placeProb":0.151,"placeOdds":3.7,"evPlace":-0.4414},{"rank":9,"score":49.7,"winRank":10,"num":1,"name":"ブレイヴアーサー","winProb":0.0344,"winOdds":22.2,"evWin":-0.2367,"placeProb":0.144,"placeOdds":4.4,"evPlace":-0.3664},{"rank":10,"score":47.6,"winRank":9,"num":15,"name":"セイカタカキヤチク","winProb":0.0347,"winOdds":18.3,"evWin":-0.3655,"placeProb":0.1596,"placeOdds":3.8,"evPlace":-0.3934},{"rank":11,"score":45.2,"winRank":8,"num":8,"name":"サイモンオリエント","winProb":0.0368,"winOdds":17.7,"evWin":-0.3487,"placeProb":0.1418,"placeOdds":3.7,"evPlace":-0.4752},{"rank":12,"score":45.0,"winRank":14,"num":16,"name":"イサチルサリーレ","winProb":0.0181,"winOdds":33.6,"evWin":-0.3929,"placeProb":0.1038,"placeOdds":6.3,"evPlace":-0.3463},{"rank":13,"score":43.2,"winRank":3,"num":7,"name":"アレックスケー","winProb":0.1074,"winOdds":3.9,"evWin":-0.5813,"placeProb":0.4129,"placeOdds":1.5,"evPlace":-0.3807},{"rank":14,"score":41.5,"winRank":11,"num":10,"name":"パレスラン","winProb":0.0275,"winOdds":14.5,"evWin":-0.6007,"placeProb":0.2211,"placeOdds":3.1,"evPlace":-0.3147},{"rank":15,"score":39.2,"winRank":15,"num":2,"name":"キンバリー","winProb":0.0169,"winOdds":31.9,"evWin":-0.4607,"placeProb":0.102,"placeOdds":6.0,"evPlace":-0.388},{"rank":16,"score":39.1,"winRank":16,"num":11,"name":"サンアンドスターズ","winProb":0.0069,"winOdds":79.6,"evWin":-0.45,"placeProb":0.0461,"placeOdds":13.6,"evPlace":-0.3725}]},{"raceId":"20260913_06_04","date":"20260913","trackCode":"06","track":"中山","raceNo":4,"horses":[{"rank":1,"score":65.4,"winRank":1,"num":9,"name":"ワッフル","winProb":0.1899,"winOdds":60.0,"evWin":10.3931,"placeProb":0.045,"placeOdds":13.4,"evPlace":-0.3974},{"rank":2,"score":61.9,"winRank":2,"num":6,"name":"ショウナンバーボン","winProb":0.1787,"winOdds":4.8,"evWin":-0.1424,"placeProb":0.433,"placeOdds":1.9,"evPlace":-0.1773},{"rank":3,"score":56.4,"winRank":6,"num":16,"name":"ラグアイリータ","winProb":0.0829,"winOdds":8.6,"evWin":-0.2872,"placeProb":0.2906,"placeOdds":2.8,"evPlace":-0.1864},{"rank":4,"score":56.2,"winRank":3,"num":2,"name":"ランウェイミューズ","winProb":0.108,"winOdds":6.3,"evWin":-0.3193,"placeProb":0.3075,"placeOdds":2.2,"evPlace":-0.3234},{"rank":5,"score":56.2,"winRank":5,"num":8,"name":"ワインダークシー","winProb":0.1039,"winOdds":5.6,"evWin":-0.4183,"placeProb":0.3754,"placeOdds":2.1,"evPlace":-0.2116},{"rank":6,"score":55.1,"winRank":4,"num":13,"name":"オンナキュヌヴィ","winProb":0.1063,"winOdds":4.8,"evWin":-0.4897,"placeProb":0.4191,"placeOdds":1.9,"evPlace":-0.2037},{"rank":7,"score":53.4,"winRank":15,"num":3,"name":"ブライティアロード","winProb":0.0086,"winOdds":98.5,"evWin":-0.1506,"placeProb":0.0638,"placeOdds":21.6,"evPlace":0.3772},{"rank":8,"score":49.8,"winRank":8,"num":5,"name":"グランマエストロ","winProb":0.049,"winOdds":12.3,"evWin":-0.3975,"placeProb":0.1838,"placeOdds":3.4,"evPlace":-0.3751},{"rank":9,"score":49.0,"winRank":11,"num":12,"name":"ニシノオールワン","winProb":0.0142,"winOdds":37.1,"evWin":-0.4723,"placeProb":0.0857,"placeOdds":8.8,"evPlace":-0.2457},{"rank":10,"score":46.8,"winRank":10,"num":7,"name":"ピコプリンセス","winProb":0.0366,"winOdds":13.8,"evWin":-0.4944,"placeProb":0.1697,"placeOdds":3.7,"evPlace":-0.3721},{"rank":11,"score":46.5,"winRank":9,"num":14,"name":"アリアス","winProb":0.0393,"winOdds":12.5,"evWin":-0.5084,"placeProb":0.1849,"placeOdds":3.4,"evPlace":-0.3714},{"rank":12,"score":44.5,"winRank":14,"num":15,"name":"ポポラヴィスタ","winProb":0.0092,"winOdds":57.6,"evWin":-0.4713,"placeProb":0.053,"placeOdds":12.9,"evPlace":-0.3163},{"rank":13,"score":43.2,"winRank":7,"num":10,"name":"ウインドオブヘヴン","winProb":0.0512,"winOdds":7.5,"evWin":-0.6161,"placeProb":0.2462,"placeOdds":2.5,"evPlace":-0.3845},{"rank":14,"score":42.2,"winRank":13,"num":11,"name":"ロジタイガー","winProb":0.0106,"winOdds":48.2,"evWin":-0.4904,"placeProb":0.0534,"placeOdds":11.2,"evPlace":-0.4014},{"rank":15,"score":41.8,"winRank":12,"num":4,"name":"ダイユウルミナス","winProb":0.0107,"winOdds":35.3,"evWin":-0.6221,"placeProb":0.0746,"placeOdds":8.4,"evPlace":-0.3736},{"rank":16,"score":31.4,"winRank":16,"num":1,"name":"ジャジャミン","winProb":0.0009,"winOdds":174.3,"evWin":-0.8451,"placeProb":0.0143,"placeOdds":37.8,"evPlace":-0.4584}]},{"raceId":"20260913_06_05","date":"20260913","trackCode":"06","track":"中山","raceNo":5,"horses":[{"rank":1,"score":62.9,"winRank":3,"num":5,"name":"コッディ","winProb":0.1549,"winOdds":6.3,"evWin":-0.0239,"placeProb":0.3666,"placeOdds":1.9,"evPlace":-0.3034},{"rank":2,"score":61.2,"winRank":1,"num":2,"name":"ラルコ","winProb":0.2916,"winOdds":2.9,"evWin":-0.1545,"placeProb":0.6,"placeOdds":1.3,"evPlace":-0.22},{"rank":3,"score":60.6,"winRank":2,"num":9,"name":"サトノアニマ","winProb":0.1717,"winOdds":5.3,"evWin":-0.0899,"placeProb":0.4313,"placeOdds":1.7,"evPlace":-0.2667},{"rank":4,"score":53.8,"winRank":5,"num":8,"name":"タンタトリス","winProb":0.1123,"winOdds":7.9,"evWin":-0.1128,"placeProb":0.3141,"placeOdds":2.1,"evPlace":-0.3403},{"rank":5,"score":51.4,"winRank":6,"num":6,"name":"コスモコリウス","winProb":0.067,"winOdds":11.3,"evWin":-0.2434,"placeProb":0.2891,"placeOdds":2.6,"evPlace":-0.2484},{"rank":6,"score":49.7,"winRank":4,"num":11,"name":"スローブギ","winProb":0.1292,"winOdds":3.3,"evWin":-0.5738,"placeProb":0.5034,"placeOdds":1.4,"evPlace":-0.2952},{"rank":7,"score":47.8,"winRank":8,"num":1,"name":"セイルクルーズ","winProb":0.0168,"winOdds":42.1,"evWin":-0.2922,"placeProb":0.0814,"placeOdds":7.6,"evPlace":-0.3814},{"rank":8,"score":47.7,"winRank":7,"num":3,"name":"ストロングボイス","winProb":0.0282,"winOdds":18.9,"evWin":-0.4668,"placeProb":0.183,"placeOdds":3.8,"evPlace":-0.3047},{"rank":9,"score":41.1,"winRank":10,"num":7,"name":"マイサマーガール","winProb":0.0091,"winOdds":46.3,"evWin":-0.5777,"placeProb":0.0748,"placeOdds":8.3,"evPlace":-0.3789},{"rank":10,"score":40.7,"winRank":9,"num":4,"name":"カシノデスティニー","winProb":0.0158,"winOdds":25.0,"evWin":-0.6041,"placeProb":0.1147,"placeOdds":4.8,"evPlace":-0.4495},{"rank":11,"score":33.1,"winRank":11,"num":10,"name":"ホウフクゼットウ","winProb":0.0034,"winOdds":57.5,"evWin":-0.8051,"placeProb":0.0415,"placeOdds":9.9,"evPlace":-0.5893}]},{"raceId":"20260913_06_06","date":"20260913","trackCode":"06","track":"中山","raceNo":6,"horses":[{"rank":1,"score":66.4,"winRank":2,"num":15,"name":"ゴールデンダガー","winProb":0.164,"winOdds":8.7,"evWin":0.4266,"placeProb":0.3232,"placeOdds":2.6,"evPlace":-0.1596},{"rank":2,"score":60.9,"winRank":1,"num":9,"name":"ホウオウファミリー","winProb":0.247,"winOdds":3.0,"evWin":-0.2589,"placeProb":0.4761,"placeOdds":1.4,"evPlace":-0.3335},{"rank":3,"score":57.0,"winRank":6,"num":11,"name":"レッドフリーマン","winProb":0.0459,"winOdds":23.1,"evWin":0.0608,"placeProb":0.1465,"placeOdds":5.1,"evPlace":-0.2529},{"rank":4,"score":56.4,"winRank":10,"num":3,"name":"ギャニミード","winProb":0.0371,"winOdds":35.8,"evWin":0.3285,"placeProb":0.0915,"placeOdds":7.6,"evPlace":-0.3045},{"rank":5,"score":55.4,"winRank":7,"num":1,"name":"マイネルオランチア","winProb":0.0415,"winOdds":19.2,"evWin":-0.2027,"placeProb":0.1676,"placeOdds":4.4,"evPlace":-0.2626},{"rank":6,"score":54.5,"winRank":3,"num":8,"name":"ルシアージュ","winProb":0.1364,"winOdds":5.7,"evWin":-0.2225,"placeProb":0.315,"placeOdds":1.9,"evPlace":-0.4014},{"rank":7,"score":53.4,"winRank":5,"num":4,"name":"タニセンローマ","winProb":0.0498,"winOdds":15.1,"evWin":-0.2487,"placeProb":0.1787,"placeOdds":3.6,"evPlace":-0.3568},{"rank":8,"score":49.5,"winRank":13,"num":16,"name":"ディープマウンテン","winProb":0.0191,"winOdds":31.7,"evWin":-0.393,"placeProb":0.1165,"placeOdds":6.8,"evPlace":-0.2078},{"rank":9,"score":49.2,"winRank":9,"num":6,"name":"パワポケウォーズ","winProb":0.0385,"winOdds":17.3,"evWin":-0.3343,"placeProb":0.1599,"placeOdds":4.1,"evPlace":-0.3444},{"rank":10,"score":46.4,"winRank":12,"num":7,"name":"オートカリテ","winProb":0.0281,"winOdds":22.6,"evWin":-0.3644,"placeProb":0.1302,"placeOdds":5.0,"evPlace":-0.3492},{"rank":11,"score":46.2,"winRank":8,"num":2,"name":"ヨーゼフ","winProb":0.0409,"winOdds":12.6,"evWin":-0.4848,"placeProb":0.21,"placeOdds":3.1,"evPlace":-0.3492},{"rank":12,"score":45.7,"winRank":11,"num":14,"name":"オウケンサクラコ","winProb":0.0331,"winOdds":16.2,"evWin":-0.4638,"placeProb":0.1877,"placeOdds":3.9,"evPlace":-0.2681},{"rank":13,"score":45.2,"winRank":4,"num":13,"name":"フィクセルリリア","winProb":0.0884,"winOdds":5.3,"evWin":-0.5317,"placeProb":0.3077,"placeOdds":1.8,"evPlace":-0.4461},{"rank":14,"score":43.2,"winRank":14,"num":5,"name":"ヨドノサファイア","winProb":0.0138,"winOdds":46.1,"evWin":-0.3619,"placeProb":0.0659,"placeOdds":9.6,"evPlace":-0.3676},{"rank":15,"score":38.1,"winRank":15,"num":12,"name":"ロンバルドシチー","winProb":0.0093,"winOdds":55.3,"evWin":-0.4835,"placeProb":0.0553,"placeOdds":11.1,"evPlace":-0.3858},{"rank":16,"score":32.2,"winRank":16,"num":10,"name":"ヤマトスイフト","winProb":0.007,"winOdds":48.3,"evWin":-0.6624,"placeProb":0.0682,"placeOdds":10.0,"evPlace":-0.3175}]},{"raceId":"20260913_06_07","date":"20260913","trackCode":"06","track":"中山","raceNo":7,"horses":[{"rank":1,"score":63.5,"winRank":1,"num":11,"name":"ナハトナナレオン","winProb":0.2203,"winOdds":4.4,"evWin":-0.0307,"placeProb":0.3743,"placeOdds":1.7,"evPlace":-0.3637},{"rank":2,"score":61.3,"winRank":8,"num":2,"name":"スマイルカーブ","winProb":0.0334,"winOdds":26.4,"evWin":-0.1192,"placeProb":0.1548,"placeOdds":6.1,"evPlace":-0.0559},{"rank":3,"score":58.7,"winRank":7,"num":10,"name":"シャオママル","winProb":0.0367,"winOdds":22.5,"evWin":-0.1739,"placeProb":0.157,"placeOdds":5.3,"evPlace":-0.1677},{"rank":4,"score":57.8,"winRank":4,"num":8,"name":"ベアサナエチャン","winProb":0.1113,"winOdds":7.7,"evWin":-0.1428,"placeProb":0.2969,"placeOdds":2.5,"evPlace":-0.2577},{"rank":5,"score":55.7,"winRank":2,"num":15,"name":"タイセイアストロ","winProb":0.1628,"winOdds":4.8,"evWin":-0.2184,"placeProb":0.3719,"placeOdds":1.8,"evPlace":-0.3306},{"rank":6,"score":54.0,"winRank":6,"num":7,"name":"ダイヤテソーロ","winProb":0.0561,"winOdds":13.2,"evWin":-0.2591,"placeProb":0.2368,"placeOdds":3.4,"evPlace":-0.1949},{"rank":7,"score":53.7,"winRank":5,"num":9,"name":"ファンクション","winProb":0.1053,"winOdds":7.4,"evWin":-0.221,"placeProb":0.2921,"placeOdds":2.4,"evPlace":-0.2991},{"rank":8,"score":49.4,"winRank":3,"num":5,"name":"ダノンアスコルティ","winProb":0.1572,"winOdds":4.0,"evWin":-0.371,"placeProb":0.3677,"placeOdds":1.6,"evPlace":-0.4117},{"rank":9,"score":48.6,"winRank":14,"num":14,"name":"クリノゴッホ","winProb":0.0087,"winOdds":96.8,"evWin":-0.1552,"placeProb":0.0353,"placeOdds":19.9,"evPlace":-0.2984},{"rank":10,"score":47.0,"winRank":12,"num":1,"name":"ラヴスコール","winProb":0.0132,"winOdds":46.6,"evWin":-0.3863,"placeProb":0.0759,"placeOdds":10.2,"evPlace":-0.2261},{"rank":11,"score":46.0,"winRank":11,"num":4,"name":"ノーブルライナー","winProb":0.0193,"winOdds":32.9,"evWin":-0.3664,"placeProb":0.1,"placeOdds":7.4,"evPlace":-0.26},{"rank":12,"score":43.6,"winRank":15,"num":3,"name":"ツインピークス","winProb":0.0083,"winOdds":80.7,"evWin":-0.3269,"placeProb":0.0424,"placeOdds":16.7,"evPlace":-0.2913},{"rank":13,"score":43.0,"winRank":10,"num":6,"name":"ミスターマーボー","winProb":0.0241,"winOdds":19.0,"evWin":-0.5424,"placeProb":0.1429,"placeOdds":4.6,"evPlace":-0.3425},{"rank":14,"score":42.1,"winRank":9,"num":16,"name":"スワローシチー","winProb":0.0278,"winOdds":13.1,"evWin":-0.6357,"placeProb":0.2175,"placeOdds":3.4,"evPlace":-0.2604},{"rank":15,"score":39.6,"winRank":16,"num":12,"name":"スペードギニー","winProb":0.0053,"winOdds":91.9,"evWin":-0.5146,"placeProb":0.0397,"placeOdds":19.0,"evPlace":-0.2456},{"rank":16,"score":35.9,"winRank":13,"num":13,"name":"ソレエスピアージャ","winProb":0.0101,"winOdds":29.8,"evWin":-0.6976,"placeProb":0.0948,"placeOdds":6.8,"evPlace":-0.355}]},{"raceId":"20260913_06_08","date":"20260913","trackCode":"06","track":"中山","raceNo":8,"horses":[{"rank":1,"score":65.0,"winRank":3,"num":10,"name":"エルムラント","winProb":0.1352,"winOdds":8.4,"evWin":0.1353,"placeProb":0.3231,"placeOdds":2.6,"evPlace":-0.1601},{"rank":2,"score":60.7,"winRank":5,"num":3,"name":"クラシオン","winProb":0.1069,"winOdds":8.0,"evWin":-0.1448,"placeProb":0.3303,"placeOdds":2.5,"evPlace":-0.1742},{"rank":3,"score":59.9,"winRank":1,"num":16,"name":"グランルチャドール","winProb":0.1833,"winOdds":4.0,"evWin":-0.2667,"placeProb":0.4463,"placeOdds":1.7,"evPlace":-0.2413},{"rank":4,"score":58.7,"winRank":2,"num":1,"name":"ホウオウルクソール","winProb":0.1651,"winOdds":4.8,"evWin":-0.2075,"placeProb":0.4296,"placeOdds":1.8,"evPlace":-0.2268},{"rank":5,"score":56.8,"winRank":7,"num":5,"name":"ペロ","winProb":0.0458,"winOdds":19.1,"evWin":-0.1257,"placeProb":0.1528,"placeOdds":4.7,"evPlace":-0.2818},{"rank":6,"score":52.1,"winRank":6,"num":13,"name":"ラルフテソーロ","winProb":0.0905,"winOdds":9.1,"evWin":-0.176,"placeProb":0.2206,"placeOdds":2.8,"evPlace":-0.3824},{"rank":7,"score":50.5,"winRank":4,"num":14,"name":"シルフレイ","winProb":0.1205,"winOdds":5.2,"evWin":-0.3732,"placeProb":0.311,"placeOdds":1.9,"evPlace":-0.4091},{"rank":8,"score":49.7,"winRank":15,"num":9,"name":"ニシノヴィヴィ","winProb":0.0098,"winOdds":82.0,"evWin":-0.1929,"placeProb":0.0447,"placeOdds":17.3,"evPlace":-0.227},{"rank":9,"score":49.5,"winRank":11,"num":4,"name":"イラーナ","winProb":0.017,"winOdds":43.9,"evWin":-0.2535,"placeProb":0.0718,"placeOdds":9.8,"evPlace":-0.2961},{"rank":10,"score":48.7,"winRank":8,"num":6,"name":"リラキトス","winProb":0.0359,"winOdds":20.2,"evWin":-0.2743,"placeProb":0.1201,"placeOdds":4.9,"evPlace":-0.4115},{"rank":11,"score":46.5,"winRank":13,"num":8,"name":"ブルーユンチェリー","winProb":0.0161,"winOdds":42.6,"evWin":-0.3148,"placeProb":0.0718,"placeOdds":9.5,"evPlace":-0.3176},{"rank":12,"score":43.9,"winRank":9,"num":2,"name":"テンハートビート","winProb":0.0219,"winOdds":13.4,"evWin":-0.7065,"placeProb":0.1998,"placeOdds":3.5,"evPlace":-0.3008},{"rank":13,"score":42.2,"winRank":14,"num":15,"name":"ホウオウプレシャス","winProb":0.0113,"winOdds":57.9,"evWin":-0.3461,"placeProb":0.0415,"placeOdds":12.4,"evPlace":-0.4852},{"rank":14,"score":41.0,"winRank":10,"num":7,"name":"レイフロレット","winProb":0.0173,"winOdds":23.1,"evWin":-0.601,"placeProb":0.1043,"placeOdds":5.5,"evPlace":-0.4264},{"rank":15,"score":37.9,"winRank":16,"num":12,"name":"コヴェナント","winProb":0.0068,"winOdds":86.8,"evWin":-0.4101,"placeProb":0.0228,"placeOdds":18.3,"evPlace":-0.5833},{"rank":16,"score":36.8,"winRank":12,"num":11,"name":"トップマジシャン","winProb":0.0165,"winOdds":20.5,"evWin":-0.6608,"placeProb":0.1096,"placeOdds":5.0,"evPlace":-0.4521}]},{"raceId":"20260913_06_09","date":"20260913","trackCode":"06","track":"中山","raceNo":9,"horses":[{"rank":1,"score":62.7,"winRank":1,"num":1,"name":"イベントホライゾン","winProb":0.3052,"winOdds":3.1,"evWin":-0.0539,"placeProb":0.513,"placeOdds":1.4,"evPlace":-0.2818},{"rank":2,"score":62.0,"winRank":4,"num":7,"name":"グロスビーク","winProb":0.0867,"winOdds":12.0,"evWin":0.0402,"placeProb":0.2871,"placeOdds":2.6,"evPlace":-0.2536},{"rank":3,"score":56.4,"winRank":2,"num":2,"name":"ブルーマエストロ","winProb":0.2442,"winOdds":2.8,"evWin":-0.3163,"placeProb":0.5281,"placeOdds":1.3,"evPlace":-0.3135},{"rank":4,"score":54.5,"winRank":6,"num":4,"name":"グランカンタンテ","winProb":0.0622,"winOdds":14.3,"evWin":-0.1099,"placeProb":0.2449,"placeOdds":3.0,"evPlace":-0.2653},{"rank":5,"score":53.8,"winRank":5,"num":5,"name":"スナークピカソ","winProb":0.0677,"winOdds":12.8,"evWin":-0.1338,"placeProb":0.2614,"placeOdds":2.7,"evPlace":-0.2943},{"rank":6,"score":50.2,"winRank":3,"num":3,"name":"トレサフィール","winProb":0.0992,"winOdds":6.4,"evWin":-0.3652,"placeProb":0.363,"placeOdds":1.8,"evPlace":-0.3465},{"rank":7,"score":46.7,"winRank":8,"num":10,"name":"ワンモアスマイル","winProb":0.0397,"winOdds":15.7,"evWin":-0.3766,"placeProb":0.2094,"placeOdds":3.2,"evPlace":-0.3301},{"rank":8,"score":43.2,"winRank":11,"num":9,"name":"レッセパッセ","winProb":0.0138,"winOdds":47.8,"evWin":-0.3418,"placeProb":0.0823,"placeOdds":8.2,"evPlace":-0.3251},{"rank":9,"score":42.5,"winRank":9,"num":6,"name":"ヤマニンガラッシア","winProb":0.0225,"winOdds":20.2,"evWin":-0.5454,"placeProb":0.1721,"placeOdds":3.9,"evPlace":-0.3286},{"rank":10,"score":39.0,"winRank":10,"num":8,"name":"ホークマン","winProb":0.0167,"winOdds":28.0,"evWin":-0.5326,"placeProb":0.1121,"placeOdds":5.1,"evPlace":-0.4281},{"rank":11,"score":38.9,"winRank":7,"num":11,"name":"マイネルアレス","winProb":0.0422,"winOdds":8.7,"evWin":-0.6331,"placeProb":0.2266,"placeOdds":2.2,"evPlace":-0.5015}]},{"raceId":"20260913_06_10","date":"20260913","trackCode":"06","track":"中山","raceNo":10,"horses":[{"rank":1,"score":66.4,"winRank":1,"num":10,"name":"イリフィ","winProb":0.2865,"winOdds":3.1,"evWin":-0.1117,"placeProb":0.6135,"placeOdds":1.4,"evPlace":-0.1412},{"rank":2,"score":60.4,"winRank":2,"num":8,"name":"ワンダラー","winProb":0.2425,"winOdds":3.4,"evWin":-0.1756,"placeProb":0.5619,"placeOdds":1.4,"evPlace":-0.2133},{"rank":3,"score":55.0,"winRank":3,"num":9,"name":"アシャカトベ","winProb":0.1713,"winOdds":4.6,"evWin":-0.2119,"placeProb":0.4251,"placeOdds":1.6,"evPlace":-0.3199},{"rank":4,"score":52.2,"winRank":7,"num":6,"name":"ポッドソル","winProb":0.0255,"winOdds":30.0,"evWin":-0.235,"placeProb":0.1336,"placeOdds":5.9,"evPlace":-0.2117},{"rank":5,"score":49.7,"winRank":5,"num":3,"name":"コパノヴィンセント","winProb":0.07,"winOdds":9.0,"evWin":-0.3698,"placeProb":0.2635,"placeOdds":2.4,"evPlace":-0.3676},{"rank":6,"score":49.2,"winRank":4,"num":2,"name":"ドンレパルス","winProb":0.0865,"winOdds":6.1,"evWin":-0.4723,"placeProb":0.383,"placeOdds":1.9,"evPlace":-0.2723},{"rank":7,"score":48.3,"winRank":8,"num":4,"name":"スプランドゥール","winProb":0.0229,"winOdds":21.9,"evWin":-0.498,"placeProb":0.1762,"placeOdds":4.5,"evPlace":-0.207},{"rank":8,"score":41.8,"winRank":9,"num":7,"name":"メイショウコバト","winProb":0.0225,"winOdds":23.3,"evWin":-0.4746,"placeProb":0.1251,"placeOdds":4.7,"evPlace":-0.4118},{"rank":9,"score":39.6,"winRank":6,"num":5,"name":"アデランテ","winProb":0.0552,"winOdds":8.5,"evWin":-0.5312,"placeProb":0.2288,"placeOdds":2.3,"evPlace":-0.4737},{"rank":10,"score":37.2,"winRank":10,"num":1,"name":"パルデンス","winProb":0.017,"winOdds":30.3,"evWin":-0.4851,"placeProb":0.0892,"placeOdds":5.9,"evPlace":-0.4735}]},{"raceId":"20260913_06_11","date":"20260913","trackCode":"06","track":"中山","raceNo":11,"horses":[{"rank":1,"score":63.7,"winRank":4,"num":2,"name":"アウダーシア","winProb":0.1367,"winOdds":19.3,"evWin":1.639,"placeProb":0.1465,"placeOdds":4.8,"evPlace":-0.297},{"rank":2,"score":59.6,"winRank":3,"num":5,"name":"アスクエジンバラ","winProb":0.1437,"winOdds":6.1,"evWin":-0.1236,"placeProb":0.4247,"placeOdds":2.1,"evPlace":-0.1081},{"rank":3,"score":58.4,"winRank":7,"num":4,"name":"リッツパーティー","winProb":0.0455,"winOdds":32.7,"evWin":0.4888,"placeProb":0.1018,"placeOdds":7.5,"evPlace":-0.2363},{"rank":4,"score":58.3,"winRank":1,"num":8,"name":"ゴーイントゥスカイ","winProb":0.1473,"winOdds":4.5,"evWin":-0.3372,"placeProb":0.4073,"placeOdds":1.8,"evPlace":-0.2668},{"rank":5,"score":54.5,"winRank":2,"num":10,"name":"バステール","winProb":0.1438,"winOdds":4.3,"evWin":-0.3817,"placeProb":0.4069,"placeOdds":1.7,"evPlace":-0.3082},{"rank":6,"score":53.0,"winRank":5,"num":6,"name":"サヴォアフェール","winProb":0.1201,"winOdds":5.1,"evWin":-0.3875,"placeProb":0.3852,"placeOdds":1.9,"evPlace":-0.2682},{"rank":7,"score":52.0,"winRank":14,"num":13,"name":"フウセン","winProb":0.0133,"winOdds":77.0,"evWin":0.0239,"placeProb":0.0637,"placeOdds":16.4,"evPlace":0.0444},{"rank":8,"score":51.5,"winRank":11,"num":3,"name":"バドリナート","winProb":0.019,"winOdds":37.6,"evWin":-0.284,"placeProb":0.0874,"placeOdds":8.6,"evPlace":-0.2481},{"rank":9,"score":48.3,"winRank":6,"num":9,"name":"サノノグレーター","winProb":0.1004,"winOdds":6.0,"evWin":-0.3975,"placeProb":0.2817,"placeOdds":2.1,"evPlace":-0.4084},{"rank":10,"score":48.2,"winRank":8,"num":16,"name":"ラディアントスター","winProb":0.0338,"winOdds":16.3,"evWin":-0.449,"placeProb":0.1775,"placeOdds":4.1,"evPlace":-0.2723},{"rank":11,"score":46.6,"winRank":15,"num":14,"name":"ティラーノ","winProb":0.0126,"winOdds":63.5,"evWin":-0.1971,"placeProb":0.0472,"placeOdds":13.7,"evPlace":-0.3532},{"rank":12,"score":44.2,"winRank":10,"num":1,"name":"ウェイクフィールド","winProb":0.02,"winOdds":25.6,"evWin":-0.487,"placeProb":0.097,"placeOdds":6.0,"evPlace":-0.4183},{"rank":13,"score":43.8,"winRank":9,"num":12,"name":"ラージアンサンブル","winProb":0.0239,"winOdds":20.0,"evWin":-0.5216,"placeProb":0.1185,"placeOdds":4.9,"evPlace":-0.4191},{"rank":14,"score":41.7,"winRank":16,"num":7,"name":"ジャスティンシカゴ","winProb":0.007,"winOdds":65.7,"evWin":-0.5393,"placeProb":0.0598,"placeOdds":14.1,"evPlace":-0.1563},{"rank":15,"score":39.2,"winRank":13,"num":11,"name":"ミリオンクラウン","winProb":0.0155,"winOdds":29.1,"evWin":-0.5504,"placeProb":0.0878,"placeOdds":6.8,"evPlace":-0.4027},{"rank":16,"score":37.0,"winRank":12,"num":15,"name":"エリプティクカーブ","winProb":0.0173,"winOdds":24.2,"evWin":-0.5823,"placeProb":0.1068,"placeOdds":5.7,"evPlace":-0.391}]},{"raceId":"20260913_06_12","date":"20260913","trackCode":"06","track":"中山","raceNo":12,"horses":[{"rank":1,"score":63.4,"winRank":1,"num":7,"name":"ラストレガシー","winProb":0.2039,"winOdds":5.1,"evWin":0.0401,"placeProb":0.4194,"placeOdds":1.8,"evPlace":-0.245},{"rank":2,"score":63.1,"winRank":4,"num":11,"name":"ブレードサクセス","winProb":0.1574,"winOdds":8.3,"evWin":0.3066,"placeProb":0.2788,"placeOdds":2.4,"evPlace":-0.3309},{"rank":3,"score":59.0,"winRank":3,"num":9,"name":"ナイトスラッガー","winProb":0.1807,"winOdds":5.3,"evWin":-0.0425,"placeProb":0.4426,"placeOdds":1.8,"evPlace":-0.2033},{"rank":4,"score":54.5,"winRank":6,"num":6,"name":"バードウォッチャー","winProb":0.0516,"winOdds":15.0,"evWin":-0.2257,"placeProb":0.2517,"placeOdds":3.5,"evPlace":-0.1192},{"rank":5,"score":53.0,"winRank":2,"num":4,"name":"ジェイエルモーダル","winProb":0.1808,"winOdds":2.8,"evWin":-0.4936,"placeProb":0.4614,"placeOdds":1.4,"evPlace":-0.354},{"rank":6,"score":51.0,"winRank":7,"num":3,"name":"ニシノケンタマン","winProb":0.0403,"winOdds":17.0,"evWin":-0.3149,"placeProb":0.1649,"placeOdds":3.9,"evPlace":-0.3568},{"rank":7,"score":49.3,"winRank":10,"num":5,"name":"メイショウリリー","winProb":0.0202,"winOdds":34.6,"evWin":-0.3009,"placeProb":0.1035,"placeOdds":7.1,"evPlace":-0.2653},{"rank":8,"score":48.4,"winRank":9,"num":8,"name":"カゼノタカトシ","winProb":0.0303,"winOdds":20.0,"evWin":-0.394,"placeProb":0.1494,"placeOdds":4.5,"evPlace":-0.3278},{"rank":9,"score":48.3,"winRank":8,"num":1,"name":"コスモコンフェルマ","winProb":0.0375,"winOdds":14.9,"evWin":-0.442,"placeProb":0.1848,"placeOdds":3.5,"evPlace":-0.3532},{"rank":10,"score":44.4,"winRank":5,"num":12,"name":"コーリンカルベラ","winProb":0.0625,"winOdds":7.5,"evWin":-0.5311,"placeProb":0.2559,"placeOdds":2.2,"evPlace":-0.4369},{"rank":11,"score":43.1,"winRank":11,"num":10,"name":"ブレゲアン","winProb":0.0171,"winOdds":26.2,"evWin":-0.5529,"placeProb":0.1245,"placeOdds":5.6,"evPlace":-0.3027},{"rank":12,"score":40.3,"winRank":12,"num":2,"name":"ハイラント","winProb":0.011,"winOdds":29.2,"evWin":-0.68,"placeProb":0.1229,"placeOdds":6.1,"evPlace":-0.2501},{"rank":13,"score":32.3,"winRank":13,"num":13,"name":"サザンウォリアー","winProb":0.0067,"winOdds":57.2,"evWin":-0.6175,"placeProb":0.0401,"placeOdds":11.1,"evPlace":-0.5545}]},{"raceId":"20260913_09_01","date":"20260913","trackCode":"09","track":"阪神","raceNo":1,"horses":[{"rank":1,"score":59.0,"winRank":8,"num":10,"name":"ダイシンレジウス","winProb":0.0469,"winOdds":18.5,"evWin":-0.1326,"placeProb":0.2448,"placeOdds":3.8,"evPlace":-0.0697},{"rank":2,"score":58.9,"winRank":2,"num":5,"name":"ヘスティア","winProb":0.1977,"winOdds":4.2,"evWin":-0.1698,"placeProb":0.4693,"placeOdds":1.5,"evPlace":-0.2961},{"rank":3,"score":55.8,"winRank":6,"num":8,"name":"ルミナスシェリー","winProb":0.0537,"winOdds":20.3,"evWin":0.0893,"placeProb":0.1594,"placeOdds":4.1,"evPlace":-0.3464},{"rank":4,"score":54.7,"winRank":4,"num":6,"name":"スイトーヨ","winProb":0.0726,"winOdds":11.0,"evWin":-0.2019,"placeProb":0.2921,"placeOdds":2.5,"evPlace":-0.2699},{"rank":5,"score":51.6,"winRank":3,"num":11,"name":"スティルラブハー","winProb":0.1897,"winOdds":4.2,"evWin":-0.2032,"placeProb":0.4164,"placeOdds":1.5,"evPlace":-0.3754},{"rank":6,"score":50.5,"winRank":7,"num":7,"name":"シュライアハフト","winProb":0.0484,"winOdds":16.6,"evWin":-0.1967,"placeProb":0.2065,"placeOdds":3.4,"evPlace":-0.2978},{"rank":7,"score":50.2,"winRank":1,"num":4,"name":"ウンディーネ","winProb":0.2335,"winOdds":2.5,"evWin":-0.4163,"placeProb":0.5916,"placeOdds":1.2,"evPlace":-0.2901},{"rank":8,"score":47.9,"winRank":5,"num":1,"name":"ウィザードシチー","winProb":0.0688,"winOdds":12.3,"evWin":-0.154,"placeProb":0.2085,"placeOdds":2.7,"evPlace":-0.4372},{"rank":9,"score":43.2,"winRank":11,"num":3,"name":"カクシンゴールド","winProb":0.0215,"winOdds":37.2,"evWin":-0.2013,"placeProb":0.0977,"placeOdds":6.8,"evPlace":-0.3357},{"rank":10,"score":42.8,"winRank":9,"num":9,"name":"ラブシンフォニー","winProb":0.0419,"winOdds":16.7,"evWin":-0.3005,"placeProb":0.1937,"placeOdds":3.5,"evPlace":-0.3221},{"rank":11,"score":35.5,"winRank":10,"num":2,"name":"ダイメイアゲイン","winProb":0.0255,"winOdds":26.4,"evWin":-0.3269,"placeProb":0.1201,"placeOdds":5.0,"evPlace":-0.3995}]},{"raceId":"20260913_09_02","date":"20260913","trackCode":"09","track":"阪神","raceNo":2,"horses":[{"rank":1,"score":55.6,"winRank":6,"num":3,"name":"ゴルディアス","winProb":0.0347,"winOdds":24.3,"evWin":-0.1573,"placeProb":0.1746,"placeOdds":8.3,"evPlace":0.4495},{"rank":2,"score":53.3,"winRank":5,"num":1,"name":"コスモクラウン","winProb":0.1059,"winOdds":7.0,"evWin":-0.259,"placeProb":0.4193,"placeOdds":2.9,"evPlace":0.216},{"rank":3,"score":53.2,"winRank":2,"num":5,"name":"エアロクリスタ","winProb":0.1814,"winOdds":3.9,"evWin":-0.2926,"placeProb":0.5871,"placeOdds":1.7,"evPlace":-0.002},{"rank":4,"score":52.2,"winRank":4,"num":2,"name":"レイクイーン","winProb":0.1174,"winOdds":5.9,"evWin":-0.3076,"placeProb":0.4901,"placeOdds":2.5,"evPlace":0.2252},{"rank":5,"score":51.1,"winRank":1,"num":4,"name":"ブレイクガール","winProb":0.3809,"winOdds":2.1,"evWin":-0.2002,"placeProb":0.6894,"placeOdds":1.2,"evPlace":-0.1727},{"rank":6,"score":49.3,"winRank":3,"num":7,"name":"コトテーラー","winProb":0.1641,"winOdds":4.0,"evWin":-0.3435,"placeProb":0.5677,"placeOdds":1.8,"evPlace":0.0219},{"rank":7,"score":35.3,"winRank":7,"num":6,"name":"ベアヒロシデス","winProb":0.0157,"winOdds":34.5,"evWin":-0.4572,"placeProb":0.0718,"placeOdds":11.7,"evPlace":-0.1599}]},{"raceId":"20260913_09_03","date":"20260913","trackCode":"09","track":"阪神","raceNo":3,"horses":[{"rank":1,"score":66.4,"winRank":2,"num":5,"name":"クロレ","winProb":0.1811,"winOdds":5.6,"evWin":0.0143,"placeProb":0.4168,"placeOdds":1.8,"evPlace":-0.2498},{"rank":2,"score":62.1,"winRank":1,"num":7,"name":"タガノランパート","winProb":0.2853,"winOdds":2.5,"evWin":-0.2868,"placeProb":0.5797,"placeOdds":1.3,"evPlace":-0.2464},{"rank":3,"score":61.2,"winRank":4,"num":16,"name":"グレートアゲイン","winProb":0.1144,"winOdds":7.2,"evWin":-0.1767,"placeProb":0.3772,"placeOdds":2.1,"evPlace":-0.2079},{"rank":4,"score":57.3,"winRank":3,"num":11,"name":"ラミエルノムスコ","winProb":0.1422,"winOdds":5.3,"evWin":-0.2461,"placeProb":0.3496,"placeOdds":1.8,"evPlace":-0.3707},{"rank":5,"score":55.4,"winRank":9,"num":3,"name":"デルマタカチホ","winProb":0.019,"winOdds":45.3,"evWin":-0.14,"placeProb":0.0773,"placeOdds":8.8,"evPlace":-0.3194},{"rank":6,"score":52.1,"winRank":6,"num":9,"name":"ブルーザー","winProb":0.0441,"winOdds":15.5,"evWin":-0.3158,"placeProb":0.1736,"placeOdds":3.5,"evPlace":-0.3924},{"rank":7,"score":50.9,"winRank":5,"num":4,"name":"イクオクコウネン","winProb":0.0692,"winOdds":8.1,"evWin":-0.4399,"placeProb":0.2984,"placeOdds":2.3,"evPlace":-0.3137},{"rank":8,"score":50.0,"winRank":11,"num":13,"name":"カワキタベレッタ","winProb":0.0181,"winOdds":36.1,"evWin":-0.3463,"placeProb":0.0923,"placeOdds":7.1,"evPlace":-0.3446},{"rank":9,"score":49.7,"winRank":8,"num":1,"name":"インヴァイト","winProb":0.0213,"winOdds":31.5,"evWin":-0.3279,"placeProb":0.097,"placeOdds":6.3,"evPlace":-0.3888},{"rank":10,"score":48.5,"winRank":7,"num":14,"name":"スマイルガーデン","winProb":0.0401,"winOdds":17.5,"evWin":-0.2987,"placeProb":0.1317,"placeOdds":3.9,"evPlace":-0.4865},{"rank":11,"score":48.1,"winRank":14,"num":2,"name":"メイショウゲッコウ","winProb":0.0105,"winOdds":62.1,"evWin":-0.3509,"placeProb":0.058,"placeOdds":11.5,"evPlace":-0.3335},{"rank":12,"score":45.9,"winRank":10,"num":15,"name":"ロードファイター","winProb":0.0185,"winOdds":28.1,"evWin":-0.4811,"placeProb":0.1148,"placeOdds":5.7,"evPlace":-0.3458},{"rank":13,"score":43.0,"winRank":12,"num":8,"name":"サトノシャッツ","winProb":0.0155,"winOdds":39.6,"evWin":-0.3858,"placeProb":0.0716,"placeOdds":7.7,"evPlace":-0.4488},{"rank":14,"score":40.6,"winRank":13,"num":10,"name":"ダンツアラーム","winProb":0.011,"winOdds":46.3,"evWin":-0.4915,"placeProb":0.0712,"placeOdds":9.0,"evPlace":-0.3595},{"rank":15,"score":37.4,"winRank":15,"num":6,"name":"ラッキーモア","winProb":0.0078,"winOdds":46.7,"evWin":-0.6338,"placeProb":0.0714,"placeOdds":9.0,"evPlace":-0.3577},{"rank":16,"score":31.4,"winRank":16,"num":12,"name":"リードアクター","winProb":0.0019,"winOdds":148.0,"evWin":-0.7127,"placeProb":0.0195,"placeOdds":26.5,"evPlace":-0.4826}]},{"raceId":"20260913_09_04","date":"20260913","trackCode":"09","track":"阪神","raceNo":4,"horses":[{"rank":1,"score":69.1,"winRank":1,"num":16,"name":"ルーチェブリラーレ","winProb":0.3433,"winOdds":2.9,"evWin":-0.0044,"placeProb":0.5648,"placeOdds":1.4,"evPlace":-0.2093},{"rank":2,"score":62.0,"winRank":2,"num":15,"name":"クールドリオン","winProb":0.2733,"winOdds":2.9,"evWin":-0.2075,"placeProb":0.4917,"placeOdds":1.4,"evPlace":-0.3116},{"rank":3,"score":58.2,"winRank":9,"num":8,"name":"ダノンオブアイデア","winProb":0.0215,"winOdds":38.2,"evWin":-0.1786,"placeProb":0.1028,"placeOdds":6.6,"evPlace":-0.3217},{"rank":4,"score":57.1,"winRank":4,"num":5,"name":"オーマイラッキーン","winProb":0.0463,"winOdds":17.9,"evWin":-0.172,"placeProb":0.1705,"placeOdds":3.5,"evPlace":-0.4032},{"rank":5,"score":56.5,"winRank":3,"num":9,"name":"リボンインザスカイ","winProb":0.0651,"winOdds":11.6,"evWin":-0.2449,"placeProb":0.2304,"placeOdds":2.5,"evPlace":-0.424},{"rank":6,"score":51.7,"winRank":11,"num":18,"name":"ベルトナリテ","winProb":0.0186,"winOdds":40.0,"evWin":-0.2544,"placeProb":0.0941,"placeOdds":6.9,"evPlace":-0.3505},{"rank":7,"score":49.7,"winRank":10,"num":14,"name":"ワンダーデリエール","winProb":0.0212,"winOdds":24.8,"evWin":-0.4748,"placeProb":0.1415,"placeOdds":4.5,"evPlace":-0.3633},{"rank":8,"score":49.1,"winRank":17,"num":13,"name":"ジュンヴァッテッド","winProb":0.0089,"winOdds":91.4,"evWin":-0.1837,"placeProb":0.0439,"placeOdds":14.5,"evPlace":-0.3633},{"rank":9,"score":48.7,"winRank":8,"num":6,"name":"ヴィスメンティス","winProb":0.0221,"winOdds":25.7,"evWin":-0.4313,"placeProb":0.1255,"placeOdds":4.7,"evPlace":-0.4099},{"rank":10,"score":47.1,"winRank":7,"num":11,"name":"ロールスワン","winProb":0.0251,"winOdds":23.3,"evWin":-0.416,"placeProb":0.1193,"placeOdds":4.3,"evPlace":-0.4869},{"rank":11,"score":46.6,"winRank":16,"num":3,"name":"ワンダーシャッフル","winProb":0.0098,"winOdds":75.1,"evWin":-0.2677,"placeProb":0.0488,"placeOdds":12.0,"evPlace":-0.4149},{"rank":12,"score":46.6,"winRank":14,"num":7,"name":"ヴァンドゥーヴル","winProb":0.0148,"winOdds":33.0,"evWin":-0.5112,"placeProb":0.116,"placeOdds":5.8,"evPlace":-0.3271},{"rank":13,"score":45.4,"winRank":12,"num":1,"name":"レイワノキセキ","winProb":0.0162,"winOdds":30.8,"evWin":-0.5022,"placeProb":0.1136,"placeOdds":5.4,"evPlace":-0.3868},{"rank":14,"score":44.6,"winRank":5,"num":10,"name":"ノブレスラブリエ","winProb":0.046,"winOdds":10.9,"evWin":-0.4983,"placeProb":0.2196,"placeOdds":2.4,"evPlace":-0.4729},{"rank":15,"score":43.6,"winRank":18,"num":17,"name":"フローマジック","winProb":0.0081,"winOdds":69.4,"evWin":-0.4362,"placeProb":0.0552,"placeOdds":11.2,"evPlace":-0.3819},{"rank":16,"score":43.0,"winRank":13,"num":4,"name":"シャリキモン","winProb":0.0162,"winOdds":32.8,"evWin":-0.4699,"placeProb":0.0977,"placeOdds":5.8,"evPlace":-0.4335},{"rank":17,"score":40.7,"winRank":6,"num":12,"name":"オープンザパンドラ","winProb":0.0294,"winOdds":15.6,"evWin":-0.542,"placeProb":0.1821,"placeOdds":3.1,"evPlace":-0.4356},{"rank":18,"score":40.0,"winRank":15,"num":2,"name":"テイエムプレミラン","winProb":0.0142,"winOdds":36.7,"evWin":-0.4772,"placeProb":0.0825,"placeOdds":6.4,"evPlace":-0.472}]},{"raceId":"20260913_09_05","date":"20260913","trackCode":"09","track":"阪神","raceNo":5,"horses":[{"rank":1,"score":56.3,"winRank":4,"num":4,"name":"タガノフリアン","winProb":0.0772,"winOdds":11.3,"evWin":-0.1274,"placeProb":0.3879,"placeOdds":3.8,"evPlace":0.4741},{"rank":2,"score":54.3,"winRank":1,"num":3,"name":"キリマンジェロタフ","winProb":0.4819,"winOdds":1.8,"evWin":-0.1325,"placeProb":0.7073,"placeOdds":1.2,"evPlace":-0.1512},{"rank":3,"score":53.5,"winRank":2,"num":1,"name":"マガスティール","winProb":0.1834,"winOdds":4.3,"evWin":-0.2112,"placeProb":0.5308,"placeOdds":1.8,"evPlace":-0.0446},{"rank":4,"score":51.8,"winRank":5,"num":5,"name":"ミスティビーコン","winProb":0.0698,"winOdds":7.6,"evWin":-0.4697,"placeProb":0.4343,"placeOdds":2.9,"evPlace":0.2594},{"rank":5,"score":47.3,"winRank":3,"num":6,"name":"マイネルグリモア","winProb":0.1328,"winOdds":4.4,"evWin":-0.4156,"placeProb":0.5325,"placeOdds":1.8,"evPlace":-0.0416},{"rank":6,"score":36.9,"winRank":6,"num":2,"name":"アーデルプレミア","winProb":0.0548,"winOdds":7.2,"evWin":-0.6053,"placeProb":0.4072,"placeOdds":2.8,"evPlace":0.1401}]},{"raceId":"20260913_09_06","date":"20260913","trackCode":"09","track":"阪神","raceNo":6,"horses":[{"rank":1,"score":62.2,"winRank":5,"num":4,"name":"メイショウハーブス","winProb":0.0536,"winOdds":31.6,"evWin":0.6942,"placeProb":0.1336,"placeOdds":5.8,"evPlace":-0.2253},{"rank":2,"score":61.7,"winRank":1,"num":7,"name":"ビッグヒーロー","winProb":0.3633,"winOdds":2.3,"evWin":-0.1644,"placeProb":0.6413,"placeOdds":1.3,"evPlace":-0.1663},{"rank":3,"score":55.4,"winRank":11,"num":3,"name":"ミッキーロビン","winProb":0.0219,"winOdds":48.5,"evWin":0.0637,"placeProb":0.0887,"placeOdds":8.6,"evPlace":-0.237},{"rank":4,"score":53.8,"winRank":2,"num":2,"name":"ニシノエビガタメ","winProb":0.1275,"winOdds":6.2,"evWin":-0.2095,"placeProb":0.3277,"placeOdds":1.8,"evPlace":-0.4101},{"rank":5,"score":53.6,"winRank":3,"num":13,"name":"ナムラヴンダー","winProb":0.0859,"winOdds":8.5,"evWin":-0.2702,"placeProb":0.2971,"placeOdds":2.2,"evPlace":-0.3463},{"rank":6,"score":52.2,"winRank":6,"num":15,"name":"レッドバベル","winProb":0.0497,"winOdds":17.0,"evWin":-0.1547,"placeProb":0.166,"placeOdds":3.5,"evPlace":-0.419},{"rank":7,"score":51.9,"winRank":13,"num":1,"name":"ハナコトバ","winProb":0.0179,"winOdds":57.4,"evWin":0.0256,"placeProb":0.0757,"placeOdds":9.8,"evPlace":-0.2578},{"rank":8,"score":50.9,"winRank":10,"num":10,"name":"サトノディヴァイン","winProb":0.0352,"winOdds":24.9,"evWin":-0.1237,"placeProb":0.1394,"placeOdds":4.7,"evPlace":-0.3449},{"rank":9,"score":50.4,"winRank":12,"num":6,"name":"スターチューン","winProb":0.0215,"winOdds":41.0,"evWin":-0.1182,"placeProb":0.1028,"placeOdds":7.4,"evPlace":-0.2395},{"rank":10,"score":46.7,"winRank":7,"num":11,"name":"プレデンシア","winProb":0.0477,"winOdds":13.3,"evWin":-0.3661,"placeProb":0.2379,"placeOdds":2.9,"evPlace":-0.3101},{"rank":11,"score":46.3,"winRank":9,"num":14,"name":"ペプチドアロン","winProb":0.0447,"winOdds":17.6,"evWin":-0.2136,"placeProb":0.1598,"placeOdds":3.6,"evPlace":-0.4248},{"rank":12,"score":45.8,"winRank":4,"num":9,"name":"ゴールデンドラゴン","winProb":0.0742,"winOdds":4.6,"evWin":-0.6589,"placeProb":0.3759,"placeOdds":1.6,"evPlace":-0.3986},{"rank":13,"score":44.5,"winRank":8,"num":5,"name":"タガノアルテミス","winProb":0.0475,"winOdds":13.4,"evWin":-0.3631,"placeProb":0.1935,"placeOdds":2.9,"evPlace":-0.4389},{"rank":14,"score":42.8,"winRank":14,"num":8,"name":"ハーブドーレ","winProb":0.0072,"winOdds":98.2,"evWin":-0.2974,"placeProb":0.0415,"placeOdds":16.3,"evPlace":-0.3232},{"rank":15,"score":31.7,"winRank":15,"num":12,"name":"ワンダーアンレール","winProb":0.0023,"winOdds":172.7,"evWin":-0.6018,"placeProb":0.0191,"placeOdds":28.2,"evPlace":-0.4611}]},{"raceId":"20260913_09_07","date":"20260913","trackCode":"09","track":"阪神","raceNo":7,"horses":[{"rank":1,"score":61.8,"winRank":7,"num":15,"name":"バルミラクル","winProb":0.027,"winOdds":38.6,"evWin":0.0425,"placeProb":0.1114,"placeOdds":7.7,"evPlace":-0.1422},{"rank":2,"score":60.9,"winRank":1,"num":5,"name":"ゲタリア","winProb":0.2449,"winOdds":3.1,"evWin":-0.241,"placeProb":0.5612,"placeOdds":1.4,"evPlace":-0.2143},{"rank":3,"score":56.8,"winRank":3,"num":16,"name":"ウォーターパラディ","winProb":0.1785,"winOdds":4.5,"evWin":-0.1969,"placeProb":0.4614,"placeOdds":1.6,"evPlace":-0.2618},{"rank":4,"score":55.4,"winRank":2,"num":6,"name":"ジューンアゲイン","winProb":0.1815,"winOdds":4.1,"evWin":-0.2559,"placeProb":0.4361,"placeOdds":1.5,"evPlace":-0.3459},{"rank":5,"score":55.2,"winRank":9,"num":1,"name":"シャープインサイト","winProb":0.0209,"winOdds":46.4,"evWin":-0.0297,"placeProb":0.0728,"placeOdds":9.2,"evPlace":-0.3304},{"rank":6,"score":53.6,"winRank":14,"num":4,"name":"ロイヤルテール","winProb":0.0108,"winOdds":84.5,"evWin":-0.0885,"placeProb":0.0479,"placeOdds":15.8,"evPlace":-0.2432},{"rank":7,"score":51.8,"winRank":5,"num":2,"name":"プレダトゥール","winProb":0.0475,"winOdds":17.4,"evWin":-0.1734,"placeProb":0.1438,"placeOdds":3.9,"evPlace":-0.4393},{"rank":8,"score":51.7,"winRank":4,"num":13,"name":"ヴォンドゥ","winProb":0.1517,"winOdds":4.7,"evWin":-0.287,"placeProb":0.3937,"placeOdds":1.7,"evPlace":-0.3307},{"rank":9,"score":49.3,"winRank":12,"num":8,"name":"ロードヴェルテクス","winProb":0.0154,"winOdds":44.5,"evWin":-0.3149,"placeProb":0.0903,"placeOdds":8.8,"evPlace":-0.2052},{"rank":10,"score":48.8,"winRank":15,"num":12,"name":"ケイエイト","winProb":0.0107,"winOdds":84.2,"evWin":-0.0958,"placeProb":0.0417,"placeOdds":15.7,"evPlace":-0.3454},{"rank":11,"score":44.4,"winRank":10,"num":11,"name":"グランディマージュ","winProb":0.0205,"winOdds":30.3,"evWin":-0.378,"placeProb":0.1109,"placeOdds":6.2,"evPlace":-0.3125},{"rank":12,"score":44.2,"winRank":13,"num":3,"name":"ベストレーサー","winProb":0.011,"winOdds":65.7,"evWin":-0.2759,"placeProb":0.0493,"placeOdds":12.4,"evPlace":-0.3887},{"rank":13,"score":43.1,"winRank":11,"num":9,"name":"ワンウェイトゥヘル","winProb":0.0156,"winOdds":28.7,"evWin":-0.551,"placeProb":0.143,"placeOdds":5.9,"evPlace":-0.1562},{"rank":14,"score":42.4,"winRank":8,"num":7,"name":"ハードシングス","winProb":0.0258,"winOdds":23.7,"evWin":-0.3886,"placeProb":0.1338,"placeOdds":5.0,"evPlace":-0.3309},{"rank":15,"score":40.3,"winRank":6,"num":10,"name":"フレイムスター","winProb":0.0288,"winOdds":16.4,"evWin":-0.528,"placeProb":0.1385,"placeOdds":3.7,"evPlace":-0.4874},{"rank":16,"score":40.2,"winRank":16,"num":14,"name":"コンテナライン","winProb":0.0094,"winOdds":61.4,"evWin":-0.423,"placeProb":0.0642,"placeOdds":11.6,"evPlace":-0.2553}]},{"raceId":"20260913_09_08","date":"20260913","trackCode":"09","track":"阪神","raceNo":8,"horses":[{"rank":1,"score":62.9,"winRank":3,"num":8,"name":"アビラーシャ","winProb":0.1523,"winOdds":11.0,"evWin":0.6749,"placeProb":0.2609,"placeOdds":2.9,"evPlace":-0.2435},{"rank":2,"score":60.1,"winRank":2,"num":3,"name":"アスクガンバーレ","winProb":0.1765,"winOdds":5.3,"evWin":-0.0646,"placeProb":0.4162,"placeOdds":1.9,"evPlace":-0.2093},{"rank":3,"score":57.0,"winRank":1,"num":2,"name":"ココロヅヨサ","winProb":0.1988,"winOdds":3.7,"evWin":-0.2643,"placeProb":0.4063,"placeOdds":1.6,"evPlace":-0.3499},{"rank":4,"score":54.8,"winRank":8,"num":6,"name":"グランドスウェル","winProb":0.0368,"winOdds":32.3,"evWin":0.1888,"placeProb":0.1143,"placeOdds":7.3,"evPlace":-0.1658},{"rank":5,"score":51.5,"winRank":7,"num":9,"name":"メイショウクモイ","winProb":0.0566,"winOdds":11.5,"evWin":-0.349,"placeProb":0.2557,"placeOdds":3.1,"evPlace":-0.2073},{"rank":6,"score":50.5,"winRank":4,"num":11,"name":"サンライズオスカー","winProb":0.1093,"winOdds":5.3,"evWin":-0.4205,"placeProb":0.3945,"placeOdds":1.9,"evPlace":-0.2504},{"rank":7,"score":49.3,"winRank":11,"num":7,"name":"マーベリックシチー","winProb":0.014,"winOdds":31.6,"evWin":-0.5574,"placeProb":0.1454,"placeOdds":7.1,"evPlace":0.0323},{"rank":8,"score":48.0,"winRank":5,"num":1,"name":"ガイストライヒ","winProb":0.1036,"winOdds":6.4,"evWin":-0.337,"placeProb":0.307,"placeOdds":2.1,"evPlace":-0.3552},{"rank":9,"score":47.4,"winRank":9,"num":4,"name":"レッドホット","winProb":0.0342,"winOdds":19.1,"evWin":-0.3473,"placeProb":0.1535,"placeOdds":4.6,"evPlace":-0.2939},{"rank":10,"score":44.0,"winRank":6,"num":5,"name":"メイショウソウテン","winProb":0.0932,"winOdds":4.8,"evWin":-0.5524,"placeProb":0.3726,"placeOdds":1.8,"evPlace":-0.3293},{"rank":11,"score":41.9,"winRank":10,"num":10,"name":"ラッキーベイ","winProb":0.016,"winOdds":27.6,"evWin":-0.5596,"placeProb":0.1236,"placeOdds":6.3,"evPlace":-0.2214},{"rank":12,"score":32.7,"winRank":12,"num":12,"name":"ブルーストレイル","winProb":0.0087,"winOdds":40.5,"evWin":-0.6494,"placeProb":0.05,"placeOdds":9.0,"evPlace":-0.5496}]},{"raceId":"20260913_09_09","date":"20260913","trackCode":"09","track":"阪神","raceNo":9,"horses":[{"rank":1,"score":64.5,"winRank":2,"num":10,"name":"ミッキージャンプ","winProb":0.262,"winOdds":3.8,"evWin":-0.0043,"placeProb":0.5349,"placeOdds":1.4,"evPlace":-0.2511},{"rank":2,"score":61.2,"winRank":1,"num":5,"name":"タンテドヴィーヴル","winProb":0.2814,"winOdds":2.3,"evWin":-0.3528,"placeProb":0.6896,"placeOdds":1.2,"evPlace":-0.1724},{"rank":3,"score":58.5,"winRank":4,"num":7,"name":"シーミハットク","winProb":0.1303,"winOdds":7.4,"evWin":-0.0361,"placeProb":0.3731,"placeOdds":2.0,"evPlace":-0.2538},{"rank":4,"score":53.0,"winRank":3,"num":2,"name":"マジョレルブルー","winProb":0.1665,"winOdds":4.3,"evWin":-0.2842,"placeProb":0.4407,"placeOdds":1.4,"evPlace":-0.383},{"rank":5,"score":52.1,"winRank":5,"num":3,"name":"サンライズバブル","winProb":0.0508,"winOdds":14.6,"evWin":-0.2589,"placeProb":0.2172,"placeOdds":2.9,"evPlace":-0.37},{"rank":6,"score":51.9,"winRank":7,"num":11,"name":"サミダレナイツ","winProb":0.0295,"winOdds":24.9,"evWin":-0.2654,"placeProb":0.158,"placeOdds":4.5,"evPlace":-0.289},{"rank":7,"score":45.7,"winRank":6,"num":4,"name":"ダイヤモンドハンズ","winProb":0.0366,"winOdds":12.6,"evWin":-0.5385,"placeProb":0.234,"placeOdds":2.6,"evPlace":-0.3917},{"rank":8,"score":45.5,"winRank":8,"num":1,"name":"ヨシヒロ","winProb":0.0136,"winOdds":47.7,"evWin":-0.3518,"placeProb":0.0724,"placeOdds":8.0,"evPlace":-0.421},{"rank":9,"score":42.8,"winRank":10,"num":6,"name":"ヴァイザーバルコ","winProb":0.0101,"winOdds":45.6,"evWin":-0.5416,"placeProb":0.0813,"placeOdds":7.7,"evPlace":-0.3743},{"rank":10,"score":37.6,"winRank":11,"num":9,"name":"バセリーナ","winProb":0.0074,"winOdds":38.9,"evWin":-0.7132,"placeProb":0.0927,"placeOdds":6.6,"evPlace":-0.3884},{"rank":11,"score":37.1,"winRank":9,"num":8,"name":"コスモスプモーニ","winProb":0.012,"winOdds":27.4,"evWin":-0.6724,"placeProb":0.1061,"placeOdds":4.9,"evPlace":-0.48}]},{"raceId":"20260913_09_10","date":"20260913","trackCode":"09","track":"阪神","raceNo":10,"horses":[{"rank":1,"score":62.1,"winRank":3,"num":10,"name":"リチャードバローズ","winProb":0.0893,"winOdds":97.8,"evWin":7.731,"placeProb":0.0453,"placeOdds":17.3,"evPlace":-0.2165},{"rank":2,"score":60.5,"winRank":1,"num":8,"name":"インヴォーグ","winProb":0.1986,"winOdds":3.9,"evWin":-0.2255,"placeProb":0.5476,"placeOdds":1.5,"evPlace":-0.1786},{"rank":3,"score":59.3,"winRank":5,"num":13,"name":"レッドアトレーヴ","winProb":0.0716,"winOdds":20.4,"evWin":0.4602,"placeProb":0.1621,"placeOdds":4.3,"evPlace":-0.3029},{"rank":4,"score":53.1,"winRank":2,"num":2,"name":"テラメリタ","winProb":0.1904,"winOdds":2.9,"evWin":-0.4478,"placeProb":0.5393,"placeOdds":1.4,"evPlace":-0.245},{"rank":5,"score":51.5,"winRank":6,"num":3,"name":"モアリジット","winProb":0.0542,"winOdds":18.7,"evWin":0.0138,"placeProb":0.1239,"placeOdds":4.0,"evPlace":-0.5042},{"rank":6,"score":51.0,"winRank":14,"num":7,"name":"ドゥカート","winProb":0.016,"winOdds":63.5,"evWin":0.0165,"placeProb":0.0706,"placeOdds":11.4,"evPlace":-0.1951},{"rank":7,"score":50.9,"winRank":10,"num":4,"name":"エポックヴィーナス","winProb":0.0423,"winOdds":20.9,"evWin":-0.1153,"placeProb":0.1578,"placeOdds":4.4,"evPlace":-0.3055},{"rank":8,"score":50.3,"winRank":8,"num":1,"name":"チェルノボーグ","winProb":0.0499,"winOdds":16.3,"evWin":-0.1864,"placeProb":0.1749,"placeOdds":3.6,"evPlace":-0.3702},{"rank":9,"score":49.0,"winRank":9,"num":5,"name":"モンテシート","winProb":0.0435,"winOdds":17.1,"evWin":-0.2561,"placeProb":0.1801,"placeOdds":3.7,"evPlace":-0.3335},{"rank":10,"score":48.1,"winRank":7,"num":6,"name":"ハギノアルデバラン","winProb":0.0526,"winOdds":11.7,"evWin":-0.3841,"placeProb":0.2428,"placeOdds":2.7,"evPlace":-0.3444},{"rank":11,"score":47.6,"winRank":15,"num":14,"name":"サクセスアイ","winProb":0.0103,"winOdds":89.4,"evWin":-0.0772,"placeProb":0.0454,"placeOdds":15.8,"evPlace":-0.2828},{"rank":12,"score":45.5,"winRank":4,"num":15,"name":"コスモアンソロジー","winProb":0.0855,"winOdds":5.9,"evWin":-0.4955,"placeProb":0.2993,"placeOdds":1.8,"evPlace":-0.4612},{"rank":13,"score":42.2,"winRank":12,"num":9,"name":"サンタンカ","winProb":0.0388,"winOdds":15.3,"evWin":-0.406,"placeProb":0.1743,"placeOdds":3.4,"evPlace":-0.4075},{"rank":14,"score":42.0,"winRank":13,"num":12,"name":"スリリングチェイス","winProb":0.0177,"winOdds":36.4,"evWin":-0.354,"placeProb":0.0883,"placeOdds":7.0,"evPlace":-0.3819},{"rank":15,"score":37.1,"winRank":11,"num":11,"name":"ヨウシタンレイ","winProb":0.0391,"winOdds":13.5,"evWin":-0.4716,"placeProb":0.1482,"placeOdds":3.1,"evPlace":-0.5406}]},{"raceId":"20260913_09_11","date":"20260913","trackCode":"09","track":"阪神","raceNo":11,"horses":[{"rank":1,"score":63.8,"winRank":1,"num":7,"name":"モンローウォーク","winProb":0.3314,"winOdds":2.6,"evWin":-0.1384,"placeProb":0.5841,"placeOdds":1.3,"evPlace":-0.2406},{"rank":2,"score":61.7,"winRank":5,"num":1,"name":"アンジュドジョワ","winProb":0.0562,"winOdds":13.7,"evWin":-0.2305,"placeProb":0.3104,"placeOdds":3.2,"evPlace":-0.0069},{"rank":3,"score":54.2,"winRank":3,"num":2,"name":"エンネ","winProb":0.1261,"winOdds":5.3,"evWin":-0.3319,"placeProb":0.4092,"placeOdds":1.8,"evPlace":-0.2634},{"rank":4,"score":53.6,"winRank":8,"num":3,"name":"スマートプリエール","winProb":0.0403,"winOdds":20.6,"evWin":-0.1704,"placeProb":0.1611,"placeOdds":4.5,"evPlace":-0.275},{"rank":5,"score":51.5,"winRank":7,"num":11,"name":"レイクラシック","winProb":0.0488,"winOdds":15.6,"evWin":-0.2392,"placeProb":0.1926,"placeOdds":3.5,"evPlace":-0.3259},{"rank":6,"score":49.7,"winRank":10,"num":5,"name":"ファストフォワード","winProb":0.025,"winOdds":31.4,"evWin":-0.2146,"placeProb":0.1054,"placeOdds":6.3,"evPlace":-0.3359},{"rank":7,"score":49.2,"winRank":4,"num":12,"name":"タイセイボーグ","winProb":0.1157,"winOdds":5.4,"evWin":-0.3753,"placeProb":0.3831,"placeOdds":1.8,"evPlace":-0.3104},{"rank":8,"score":49.1,"winRank":2,"num":6,"name":"イクシード","winProb":0.136,"winOdds":5.1,"evWin":-0.3063,"placeProb":0.3401,"placeOdds":1.7,"evPlace":-0.4218},{"rank":9,"score":48.5,"winRank":6,"num":10,"name":"スウィートハピネス","winProb":0.0553,"winOdds":13.0,"evWin":-0.2807,"placeProb":0.207,"placeOdds":3.1,"evPlace":-0.3582},{"rank":10,"score":42.4,"winRank":12,"num":4,"name":"アンディムジーク","winProb":0.0166,"winOdds":45.9,"evWin":-0.2372,"placeProb":0.0691,"placeOdds":9.0,"evPlace":-0.3784},{"rank":11,"score":38.8,"winRank":11,"num":9,"name":"ナムラコスモス","winProb":0.0235,"winOdds":25.0,"evWin":-0.4128,"placeProb":0.118,"placeOdds":5.2,"evPlace":-0.3864},{"rank":12,"score":37.4,"winRank":9,"num":8,"name":"ミリタリータトゥー","winProb":0.0252,"winOdds":23.5,"evWin":-0.4083,"placeProb":0.1198,"placeOdds":4.9,"evPlace":-0.413}]},{"raceId":"20260913_09_12","date":"20260913","trackCode":"09","track":"阪神","raceNo":12,"horses":[{"rank":1,"score":59.9,"winRank":9,"num":12,"name":"ブルーノート","winProb":0.0322,"winOdds":34.3,"evWin":0.1041,"placeProb":0.13,"placeOdds":6.0,"evPlace":-0.2202},{"rank":2,"score":56.7,"winRank":1,"num":7,"name":"アオイレーギーナ","winProb":0.2657,"winOdds":2.5,"evWin":-0.3356,"placeProb":0.5763,"placeOdds":1.3,"evPlace":-0.2508},{"rank":3,"score":55.5,"winRank":2,"num":4,"name":"カーリキュー","winProb":0.2465,"winOdds":3.3,"evWin":-0.1866,"placeProb":0.4611,"placeOdds":1.4,"evPlace":-0.3544},{"rank":4,"score":54.9,"winRank":3,"num":1,"name":"フレンズプラス","winProb":0.0777,"winOdds":11.6,"evWin":-0.0992,"placeProb":0.2375,"placeOdds":2.5,"evPlace":-0.4062},{"rank":5,"score":54.4,"winRank":7,"num":6,"name":"ヒラボクカレラ","winProb":0.0472,"winOdds":18.3,"evWin":-0.1364,"placeProb":0.202,"placeOdds":3.5,"evPlace":-0.2929},{"rank":6,"score":52.2,"winRank":8,"num":3,"name":"オトメナシャチョウ","winProb":0.0421,"winOdds":23.8,"evWin":0.0012,"placeProb":0.1288,"placeOdds":4.3,"evPlace":-0.4461},{"rank":7,"score":51.9,"winRank":13,"num":13,"name":"ホープエトワール","winProb":0.0202,"winOdds":58.9,"evWin":0.187,"placeProb":0.0685,"placeOdds":9.5,"evPlace":-0.3489},{"rank":8,"score":51.5,"winRank":12,"num":11,"name":"バイファーザベスト","winProb":0.0212,"winOdds":46.8,"evWin":-0.0056,"placeProb":0.0942,"placeOdds":7.9,"evPlace":-0.256},{"rank":9,"score":49.0,"winRank":6,"num":8,"name":"ベンダバール","winProb":0.0475,"winOdds":13.0,"evWin":-0.3823,"placeProb":0.2714,"placeOdds":2.7,"evPlace":-0.2671},{"rank":10,"score":46.5,"winRank":10,"num":10,"name":"リードプリンシパル","winProb":0.0299,"winOdds":26.9,"evWin":-0.1958,"placeProb":0.1232,"placeOdds":4.8,"evPlace":-0.4087},{"rank":11,"score":45.2,"winRank":4,"num":9,"name":"メイショウドライブ","winProb":0.0693,"winOdds":8.9,"evWin":-0.3828,"placeProb":0.2544,"placeOdds":2.2,"evPlace":-0.4402},{"rank":12,"score":41.8,"winRank":11,"num":2,"name":"ズバットマサムネ","winProb":0.0227,"winOdds":27.3,"evWin":-0.3795,"placeProb":0.115,"placeOdds":4.9,"evPlace":-0.4363},{"rank":13,"score":40.8,"winRank":5,"num":14,"name":"ユウトザレン","winProb":0.0607,"winOdds":9.2,"evWin":-0.4413,"placeProb":0.2336,"placeOdds":2.3,"evPlace":-0.4627},{"rank":14,"score":39.6,"winRank":14,"num":5,"name":"ダズリングダンス","winProb":0.017,"winOdds":37.3,"evWin":-0.3646,"placeProb":0.1038,"placeOdds":6.4,"evPlace":-0.3358}]}]</script>
+<script>
+(function(){
+  const races = JSON.parse(document.getElementById('race-data').textContent);
+
+  function fmtDate(d){
+    return d.slice(0,4) + '年' + parseInt(d.slice(4,6)) + '月' + parseInt(d.slice(6,8)) + '日';
+  }
+  const dateLabel = fmtDate(races[0].date);
+  document.getElementById('updatedLabel').textContent = dateLabel + ' 分のレースを掲載';
+  document.getElementById('footDate').textContent = dateLabel;
+
+  // global score range for bar scaling
+  let scoreMin = Infinity, scoreMax = -Infinity;
+  races.forEach(r => r.horses.forEach(h => {
+    if (h.score < scoreMin) scoreMin = h.score;
+    if (h.score > scoreMax) scoreMax = h.score;
+  }));
+  const scoreRange = Math.max(1, scoreMax - scoreMin);
+
+  function pct(x){ return (x*100).toFixed(1) + '%'; }
+  function evBadge(v){
+    const cls = v >= 0 ? 'pos' : 'neg';
+    const sign = v >= 0 ? '+' : '';
+    return `<span class="ev ${cls} tnum">${sign}${v.toFixed(2)}</span>`;
+  }
+  function rankBadgeClass(rank){
+    if (rank === 1) return 'rank-badge r1';
+    if (rank === 2) return 'rank-badge r2';
+    if (rank === 3) return 'rank-badge r3';
+    return 'rank-badge';
+  }
+
+  // group by track, preserving input order
+  const trackOrder = [];
+  const byTrack = {};
+  races.forEach(r => {
+    if (!byTrack[r.track]) { byTrack[r.track] = []; trackOrder.push(r.track); }
+    byTrack[r.track].push(r);
+  });
+
+  // tabs
+  const tabsEl = document.getElementById('trackTabs');
+  const allBtn = document.createElement('button');
+  allBtn.className = 'tab'; allBtn.textContent = 'すべて'; allBtn.setAttribute('aria-pressed','true');
+  allBtn.addEventListener('click', () => setFilter(null));
+  tabsEl.appendChild(allBtn);
+  trackOrder.forEach(t => {
+    const b = document.createElement('button');
+    b.className = 'tab'; b.textContent = t; b.setAttribute('aria-pressed','false');
+    b.addEventListener('click', () => setFilter(t));
+    tabsEl.appendChild(b);
+  });
+  function setFilter(track){
+    [...tabsEl.children].forEach(b => b.setAttribute('aria-pressed', String(b.textContent === (track || 'すべて'))));
+    document.querySelectorAll('.track-group').forEach(el => {
+      el.style.display = (!track || el.dataset.track === track) ? '' : 'none';
+    });
+  }
+
+  // pickup strip (rank 1 of every race, in order)
+  const pickupRow = document.getElementById('pickupRow');
+  races.forEach(r => {
+    const top = r.horses.find(h => h.rank === 1);
+    if (!top) return;
+    const a = document.createElement('a');
+    a.className = 'pickup-card';
+    a.href = '#' + r.raceId;
+    a.innerHTML = `
+      <div class="pickup-meta"><span>${r.track} ${r.raceNo}R</span><span>${top.num}番</span></div>
+      <div class="pickup-horse">${top.name}</div>
+      <div class="pickup-score"><span class="v tnum">${top.score.toFixed(1)}</span><span class="u">指数</span></div>
+    `;
+    pickupRow.appendChild(a);
+  });
+
+  // main groups
+  const groupsEl = document.getElementById('trackGroups');
+  trackOrder.forEach(track => {
+    const list = byTrack[track];
+    const groupWrap = document.createElement('section');
+    groupWrap.className = 'track-group';
+    groupWrap.dataset.track = track;
+
+    const heading = document.createElement('div');
+    heading.className = 'track-heading';
+    heading.innerHTML = `<h2 class="serif">${track}</h2><span class="count">${list.length}レース</span><div class="rule"></div>`;
+    groupWrap.appendChild(heading);
+
+    const grid = document.createElement('div');
+    grid.className = 'race-grid';
+
+    list.forEach(r => {
+      const card = document.createElement('article');
+      card.className = 'race-card';
+      card.id = r.raceId;
+
+      const rowsHtml = r.horses.map(h => {
+        const barPct = ((h.score - scoreMin) / scoreRange * 100).toFixed(0);
+        return `
+          <tr>
+            <td><span class="${rankBadgeClass(h.rank)} tnum">${h.rank}</span></td>
+            <td><span class="horse-num tnum">${h.num}</span></td>
+            <td class="horse-name">${h.name}</td>
+            <td><div class="score-cell"><span class="score-num tnum">${h.score.toFixed(1)}</span><span class="score-bar"><i style="width:${barPct}%"></i></span></div></td>
+            <td class="prob tnum">${pct(h.winProb)}</td>
+            <td class="odds tnum">${h.winOdds.toFixed(1)}倍</td>
+            <td>${evBadge(h.evWin)}</td>
+            <td class="prob tnum">${pct(h.placeProb)}</td>
+            <td class="odds tnum">${h.placeOdds.toFixed(1)}倍</td>
+            <td>${evBadge(h.evPlace)}</td>
+          </tr>`;
+      }).join('');
+
+      card.innerHTML = `
+        <div class="race-card-head">
+          <span class="no serif">${track} ${r.raceNo}R</span>
+          <span class="cnt">${r.horses.length}頭立て</span>
+        </div>
+        <div class="race-table-wrap">
+          <table class="horses">
+            <thead>
+              <tr>
+                <th>順</th><th>馬番</th><th>馬名</th><th>指数</th>
+                <th colspan="3" class="col-group-label">単勝(確率/オッズ/EV)</th>
+                <th colspan="3" class="col-group-label">複勝(確率/オッズ/EV)</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>`;
+      grid.appendChild(card);
+    });
+
+    groupWrap.appendChild(grid);
+    groupsEl.appendChild(groupWrap);
+  });
+})();
+</script>
