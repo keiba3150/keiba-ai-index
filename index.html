@@ -277,7 +277,7 @@
     return 'rank-badge';
   }
   function finishCell(h){
-    if (h.finish === null || h.finish === undefined) return '<span class="finish-cell miss">—</span>';
+    if (h.finish === null || h.finish === undefined || h.finish <= 0) return (h.finish === null || h.finish === undefined) ? '<span class="finish-cell miss">—</span>' : '<span class="finish-cell miss">取消等</span>';
     if (h.finish === 1) return `<span class="finish-cell win">${h.finish}着</span>`;
     if (h.finish <= 3) return `<span class="finish-cell place">${h.finish}着</span>`;
     return `<span class="finish-cell miss">${h.finish}着</span>`;
@@ -334,7 +334,7 @@
     const statsBar = document.getElementById('statsBar');
     const statsGrid = document.getElementById('statsGrid');
     const topPicks = races.map(r => r.horses.find(h => h.rank === 1)).filter(Boolean);
-    const decided = topPicks.filter(h => h.finish !== null && h.finish !== undefined);
+    const decided = topPicks.filter(h => h.finish !== null && h.finish !== undefined && h.finish > 0);
     if (decided.length) {
       statsBar.classList.add('show');
       const n = decided.length;
@@ -367,7 +367,7 @@
         <div class="pickup-meta"><span>${r.track} ${r.raceNo}R</span><span>${top.num}番</span></div>
         <div class="pickup-horse">${top.name}</div>
         <div class="pickup-score"><span class="v tnum">${top.score.toFixed(1)}</span><span class="u">指数</span></div>
-        ${top.finish !== null && top.finish !== undefined ? `<div class="pickup-result">${top.finish}着</div>` : ''}
+        ${top.finish !== null && top.finish !== undefined && top.finish > 0 ? `<div class="pickup-result">${top.finish}着</div>` : (top.finish === 0 ? '<div class="pickup-result miss">取消等</div>' : '')}
       `;
       pickupRow.appendChild(a);
     });
