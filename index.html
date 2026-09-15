@@ -512,6 +512,18 @@
     if (rank === 3) return 'rank-badge r3';
     return 'rank-badge';
   }
+  // 本命(指数1位)として扱う馬を選ぶ。取消・除外・中止(finish===0)の場合は
+  // 次に順位の高い馬を繰り上げる(レース結果がまだ出ていない場合はrank=1のまま)。
+  // 重賞レースはr.honmeiにサーバー側で既に繰り上げ済みのものが入っている。
+  function effectiveTop(r){
+    if (r.honmei) return r.honmei;
+    if (!r.horses || !r.horses.length) return null;
+    const sorted = [...r.horses].sort((a,b) => a.rank - b.rank);
+    for (const h of sorted) {
+      if (h.finish === null || h.finish === undefined || h.finish > 0) return h;
+    }
+    return sorted[0];
+  }
   function finishCell(h){
     if (h.finish === null || h.finish === undefined || h.finish <= 0) return (h.finish === null || h.finish === undefined) ? '<span class="finish-cell miss">—</span>' : '<span class="finish-cell miss">取消等</span>';
     if (h.finish === 1) return `<span class="finish-cell win">${h.finish}着</span>`;
@@ -598,7 +610,7 @@
     // stats bar (this date, top-pick performance)
     const statsBar = document.getElementById('statsBar');
     const statsGrid = document.getElementById('statsGrid');
-    const topPicks = races.map(r => r.horses.find(h => h.rank === 1) || r.honmei).filter(Boolean);
+    const topPicks = races.map(r => effectiveTop(r)).filter(Boolean);
     const decided = topPicks.filter(h => h.finish !== null && h.finish !== undefined && h.finish > 0);
     if (decided.length) {
       statsBar.classList.add('show');
@@ -623,7 +635,7 @@
     const pickupRow = document.getElementById('pickupRow');
     pickupRow.innerHTML = '';
     races.forEach(r => {
-      const top = r.horses.find(h => h.rank === 1) || r.honmei;
+      const top = effectiveTop(r);
       if (!top) return;
       const a = document.createElement('a');
       a.className = 'pickup-card' + (top.finish === 1 ? ' won' : '');
