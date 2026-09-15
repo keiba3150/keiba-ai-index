@@ -79,12 +79,14 @@
     color:var(--surface); font-size:13px; font-weight:800; flex:none;
   }
   .brand h1{font-size:19px; font-weight:700; letter-spacing:.02em;}
-  .back-link{
-    font-size:12.5px; font-weight:700; color:var(--ink-muted);
-    border:1px solid var(--line-soft); background:var(--surface);
-    padding:7px 14px; border-radius:999px; text-decoration:none;
+  .page-nav{display:flex; gap:6px; background:var(--surface-2); padding:4px; border-radius:999px; border:1px solid var(--line-soft);}
+  .page-nav a{
+    text-decoration:none; cursor:pointer; font-family:inherit;
+    padding:7px 15px; border-radius:999px; font-size:13.5px; font-weight:600;
+    color:var(--ink-muted); display:inline-block;
   }
-  .back-link:hover{color:var(--ink); border-color:var(--line);}
+  .page-nav a.active{background:var(--turf); color:#fff;}
+  .page-nav a:not(.active):hover{color:var(--ink);}
 
   .page-title{font-size:22px; font-weight:800; margin:26px 0 4px;}
   .page-desc{font-size:13.5px; color:var(--ink-muted); line-height:1.75; max-width:640px; margin-bottom:22px;}
@@ -128,7 +130,10 @@
           <h1 class="serif">総合指数ボード</h1>
         </div>
       </div>
-      <a class="back-link" href="./">指数ボードへ戻る</a>
+      <div class="page-nav">
+        <a href="./">指数ボード</a>
+        <a href="seiseki.html" class="active">成績</a>
+      </div>
     </div>
 
     <div class="page-title serif">成績</div>
